@@ -41,9 +41,6 @@ public class ProductController extends HttpServlet {
         context.setVariable("category_name", getCategoryImg(categoryNameFromUrl));
         context.setVariable("products", getProducts(categoryNameFromUrl, supplierNameFromUrl));
 
-        JDBCController controller = JDBCController.getInstance();
-        System.out.println(controller.test());
-
         engine.process("product/index.html", context, resp.getWriter());
     }
 
