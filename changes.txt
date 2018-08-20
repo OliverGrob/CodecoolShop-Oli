@@ -1,0 +1,18 @@
+- On the page we are using supplier/category names now instead of ids
+    - layout.html : removed unnecessary code
+    - ProductController.java
+        - some daomem-s are now instance variables, no need to define them more than once
+        - all context variables are at the same place, not through functions, this way it's way more clear what we have
+        - renderThePage and getCategoryImg changed according to the variables change (fewer params needed,
+        return type changed, no need for webcontext anymore, renderThePage renamed)
+        - addProductToShoppingCart changed, no need for httpservlet param, using int compare instead of string
+
+- iterstat removed in multiple html loops
+- product category and supplier are now under each product, selecting only that type works just like on the select menu
+- added flash messages on changing the amount in shopping cart (in index as well but html refreshes each time)
+- "Proceed to checkout" button is now part of the table -> will redirect to a new checkout page
+- dom.js are now written in jQuery
+- added error option to ajax calls -> need to handle errors on server side still
+- AjaxController.java - changed Maps to HashMap from LinkedHashMap (no need to be linked)
+                      - changed Map<String, String> to Map<String, Integer> -> no need to convert ints to strings anymore
+- ----- Do we want Footers?? -----

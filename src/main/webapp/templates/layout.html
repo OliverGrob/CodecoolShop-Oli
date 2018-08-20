@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head th:fragment="layout">
+        <meta charset="utf-8" />
+        <meta name="author" content="Codecool" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>Codecool Shop</title>
+
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
+              integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+                integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+                crossorigin="anonymous" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+                integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+                crossorigin="anonymous" defer></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js"
+                integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em"
+                crossorigin="anonymous" defer></script>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.js"
+                integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+                crossorigin="anonymous" defer></script>
+
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css"
+              integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+
+        <link rel="stylesheet" type="text/css" href="/static/css/custom.css" />
+        <script src="/static/js/data_handler.js" defer></script>
+        <script src="/static/js/dom.js" defer></script>
+    </head>
+    <body>
+        <nav th:fragment="layout" class="navbar navbar-light bg-dark">
+            <div class="row">
+                <a class="navbar-brand" href="/">
+                    <img src="/static/img/cap-swirl.png" width="30" height="30" class="d-inline-block align-top ml-2" alt="">
+                    <span class="brand">intAirnet</span>
+                </a>
+                <div class="dropdown">
+                    <button class="btn btn-info dropdown-toggle ml-2 mr-2" type="button" data-toggle="dropdown">Category
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li th:each="categ :${category}">
+                            <a class="dropdown-item" th:href="@{'/?category=' + ${categ.getName()}}" th:text="${categ.getName()}">HTML</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-info dropdown-toggle ml-2 mr-2" type="button" data-toggle="dropdown">Supplier
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li th:each="supp :${supplier}">
+                            <a class="dropdown-item" th:href="@{'/?supplier=' + ${supp.getName()}}" th:text="${supp.getName()}">HTML</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="cart" align="right">
+                <form action="/shopping-cart" method="get">
+                    <button class="btn btn-info btn-lg" type="submit"><i class="fas fa-shopping-cart"></i></button>
+                </form>
+                <span id="item-count" class="d-none"></span>
+            </div>
+        </nav>
+    </body>
+</html>
