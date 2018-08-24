@@ -21,7 +21,6 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
         return instance;
     }
 
-
     public List<ProductCategory> executeQueryWithReturnValue(String query) {
         List<ProductCategory> resultList = new ArrayList<>();
 
