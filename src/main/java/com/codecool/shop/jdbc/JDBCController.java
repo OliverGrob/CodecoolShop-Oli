@@ -9,7 +9,7 @@ public class JDBCController {
     private static final String DB_PASSWORD = System.getenv("MY_PSQL_PASSWORD");
     private static JDBCController instance = null;
 
-
+ 
     public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(
                 DATABASE,

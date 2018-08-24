@@ -37,7 +37,7 @@ public class Product extends BaseModel {
     public String getPrice() {
         return String.valueOf(this.defaultPrice) + " " + this.defaultCurrency.toString();
     }
-
+ 
     public String getPriceNumOnly() {
         return String.valueOf(this.defaultPrice);
     }
