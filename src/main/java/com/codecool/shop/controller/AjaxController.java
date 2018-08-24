@@ -1,5 +1,8 @@
 package com.codecool.shop.controller;
 
+import com.codecool.shop.dao.ProductDao;
+import com.codecool.shop.dao.ShoppingCartDao;
+import com.codecool.shop.dao.implementation.ProductDaoMem;
 import com.codecool.shop.dao.implementation.ShoppingCartDaoMem;
 import com.google.gson.Gson;
 
@@ -13,13 +16,14 @@ import java.util.Map;
 
 @WebServlet(urlPatterns = {"/change-quantity"})
 public class AjaxController extends HttpServlet {
+    private ProductDao productDataStore = ProductDaoMem.getInstance();
+    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoMem.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        ShoppingCartDaoMem shoppingCart = ShoppingCartDaoMem.getInstance();
         Map<String, Integer> newData = new HashMap<>();
 
-        newData.put("totalItemsInCart", shoppingCart.getSize());
+        newData.put("totalItemsInCart", shoppingCartDataStore.getAllProductsInActiveCart().size());
         String json = new Gson().toJson(newData);
 
         resp.setContentType("application/json");
@@ -29,20 +33,20 @@ public class AjaxController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        ShoppingCartDaoMem shoppingCart = ShoppingCartDaoMem.getInstance();
         Map<String, Integer> newData = new HashMap<>();
 
         int productId = Integer.parseInt(req.getParameter("id"));
 
         if (req.getParameter("quantity").equals("decrease")) {
-            shoppingCart.remove(productId);
+            shoppingCartDataStore.removeProductFromShoppingCart(productDataStore.find(productId));
         } else if (req.getParameter("quantity").equals("increase")) {
-            shoppingCart.add(shoppingCart.find(productId));
+            shoppingCartDataStore.addProductToShoppingCart(productDataStore.find(productId));
         }
 
-        int newQuantity = (shoppingCart.getQuantityById(productId) != null) ? shoppingCart.getQuantityById(productId) : 0;
-        int newTotalItems = shoppingCart.getSize();
-        int newTotalPrice = Math.round(shoppingCart.getTotalPrice() * 100) / 100;
+        int newQuantity = (shoppingCartDataStore.getProductQuantityByProductIdInActiveCart(productId) != null) ?
+                shoppingCartDataStore.getProductQuantityByProductIdInActiveCart(productId) : 0;
+        int newTotalItems = shoppingCartDataStore.findActiveCart().getProductsInCart().size();
+        int newTotalPrice = Math.round(shoppingCartDataStore.findActiveCart().getTotalPrice() * 100) / 100;
 
         newData.put("productId", productId);
         newData.put("newQuantity", newQuantity);

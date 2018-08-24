@@ -21,15 +21,15 @@
                         </th>
                         <td th:text="${product.getName()}">Item</td>
                         <td>
-                            <div th:text="'Category: ' + ${product.getProductCategory().getName()}">ProductCategory</div>
-                            <div th:text="'Supplier: ' + ${product.getSupplier().getName()}">Supplier</div>
+                            <div th:text="'Category: ' + ${product.getProductCategoryName()}">ProductCategory</div>
+                            <div th:text="'Supplier: ' + ${product.getSupplierName()}">Supplier</div>
                         </td>
                         <td th:text="${product.getPrice()}">Price</td>
                         <td class="d-inline-block">
                             <div>
                                 <i class="fas fa-minus border rounded p-2" th:id="${product.getId()}"></i>
                                 <span class="ml-3 mr-3" th:id="'quantity_' + ${product.getId()}"
-                                      th:text="${shopping_cart.getQuantityById(product.getId())}"></span>
+                                      th:text="${shopping_cart_data.getProductQuantityByProductIdInActiveCart(product.getId())}"></span>
                                 <i class="fas fa-plus border rounded p-2" th:id="${product.getId()}"></i>
                             </div>
                         </td>
@@ -38,7 +38,7 @@
                 <tbody>
                     <tr>
                         <td class="total"></td>
-                        <td class="total" id="total_items" th:text="'Total items: ' + ${shopping_cart.getSize()}"></td>
+                        <td class="total" id="total_items" th:text="'Total items: ' + ${shopping_cart.getProductsInCart().size()}"></td>
                         <td class="total"></td>
                         <td class="total" id="total_price" th:text="'Total price: ' + ${shopping_cart.getTotalPrice()} + ' USD'"></td>
                         <td class="total">

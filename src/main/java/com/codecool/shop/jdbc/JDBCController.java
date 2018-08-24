@@ -4,50 +4,17 @@ import java.sql.*;
 
 public class JDBCController {
 
-    private static final String DATABASE = "jdbc:postgresql://localhost:5432/proman";
+    private static final String DATABASE = "jdbc:postgresql://" + System.getenv("MY_PSQL_HOST") + ":5432/" + System.getenv("MY_PSQL_DBNAME");
     private static final String DB_USER = System.getenv("MY_PSQL_USER");
     private static final String DB_PASSWORD = System.getenv("MY_PSQL_PASSWORD");
     private static JDBCController instance = null;
 
-
-    public String test() {
-        String query = "SELECT * FROM boards;";
-//        executeQuery(query);
-//        return query;
-
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query);
-        ){
-            if (resultSet.next()){
-                return String.valueOf(resultSet);
-            } else {
-                return null;
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private Connection getConnection() throws SQLException {
+ 
+    public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(
                 DATABASE,
                 DB_USER,
                 DB_PASSWORD);
-    }
-
-    private void executeQuery(String query) {
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement())
-        {
-            statement.execute(query);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public static JDBCController getInstance() {
@@ -55,6 +22,17 @@ public class JDBCController {
             instance = new JDBCController();
         }
         return instance;
+    }
+
+    public void executeQuery(String query) {
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+        ){
+            statement.execute(query);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }
