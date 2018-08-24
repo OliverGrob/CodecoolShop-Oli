@@ -2,13 +2,13 @@ package com.codecool.shop.dao.implementation;
 
 import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.model.Product;
+import com.codecool.shop.model.ShoppingCart;
 
 import java.util.*;
 
 public class ShoppingCartDaoMem implements ShoppingCartDao {
 
-    private List<Product> productsInCart = new ArrayList<>();
-    private float totalPrice = 0;
+    private List<ShoppingCart> data = new ArrayList<>();
     private static ShoppingCartDaoMem instance = null;
 
     /* A private Constructor prevents any other class from instantiating.
@@ -23,44 +23,56 @@ public class ShoppingCartDaoMem implements ShoppingCartDao {
         return instance;
     }
 
-
     @Override
-    public void add(Product product) {
-        totalPrice += product.getDefaultPrice();
-        productsInCart.add(product);
+    public void add(ShoppingCart shoppingCart) {
+        shoppingCart. setId(data.size() + 1);
+        data.add(shoppingCart);
     }
 
     @Override
-    public Product find(int id) {
-        return productsInCart.stream().filter(t -> t.getId() == id).findFirst().orElse(null);
+    public void addProductToShoppingCart(Product product) {
+        ShoppingCart shoppingCart = this.findActiveCart();
+        shoppingCart.getProductsInCart().add(product);
+        shoppingCart.setTotalPrice(shoppingCart.getTotalPrice() + product.getDefaultPrice());
     }
 
     @Override
-    public Product find(String name) {
-        return productsInCart.stream().filter(t -> t.getName().equals(name)).findFirst().orElse(null);
+    public ShoppingCart find(int id) {
+        return data.stream().filter(t -> t.getId() == id).findFirst().orElse(null);
+    }
+
+    @Override
+    public ShoppingCart findActiveCart() {
+        return data.stream().filter(t -> t.getStatus().equals("inCart")).findFirst().orElse(null);
     }
 
     @Override
     public void remove(int id) {
-        totalPrice -= find(id).getDefaultPrice();
-        productsInCart.remove(find(id));
+        data.remove(find(id));
     }
 
     @Override
-    public LinkedHashSet<Product> getAll() {
-        return new LinkedHashSet<>(productsInCart);
+    public void removeProductFromShoppingCart(Product product) {
+        this.findActiveCart().getProductsInCart().remove(product);
     }
 
-    public int getSize() {
-        return productsInCart.size();
+    @Override
+    public List<ShoppingCart> getAll() {
+        return data;
     }
 
-    public float getTotalPrice() {
-        return totalPrice;
+    @Override
+    public LinkedHashSet<Product> getProductNumberInActiveCart() {
+        return new LinkedHashSet<>(this.findActiveCart().getProductsInCart());
     }
 
-    public Integer getQuantityById(int id) {
-        return (int) productsInCart.stream().filter(t -> t.getId() == id).count();
+    @Override
+    public List<Product> getAllProductsInActiveCart() {
+        return this.findActiveCart().getProductsInCart();
     }
 
+    @Override
+    public Integer getProductQuantityByProductIdInActiveCart(int id) {
+        return (int) this.findActiveCart().getProductsInCart().stream().filter(t -> t.getId() == id).count();
+    }
 }

@@ -9,6 +9,7 @@ import com.codecool.shop.dao.implementation.ProductCategoryDaoMem;
 import com.codecool.shop.dao.implementation.ProductDaoMem;
 import com.codecool.shop.dao.implementation.ShoppingCartDaoMem;
 import com.codecool.shop.dao.implementation.SupplierDaoMem;
+import com.codecool.shop.model.ShoppingCart;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -23,7 +24,7 @@ public class CheckoutController extends HttpServlet {
     private ProductDao productDataStore = ProductDaoMem.getInstance();
     private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoMem.getInstance();
     private SupplierDao supplierDataStore = SupplierDaoMem.getInstance();
-    private ShoppingCartDao shoppingCart = ShoppingCartDaoMem.getInstance();
+    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoMem.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -35,8 +36,9 @@ public class CheckoutController extends HttpServlet {
 //        context.setVariable("totalItems", session.getAttribute("totalItems"));
 //        context.setVariable("totalPrice", session.getAttribute("totalPrice"));
 
-        context.setVariable("products", shoppingCart.getAll());
-        context.setVariable("shopping_cart", shoppingCart);
+        context.setVariable("products", shoppingCartDataStore.getProductNumberInActiveCart());
+        context.setVariable("shopping_cart_data", shoppingCartDataStore);
+        context.setVariable("shopping_cart", shoppingCartDataStore.findActiveCart());
         context.setVariable("category", productCategoryDataStore.getAll());
         context.setVariable("supplier", supplierDataStore.getAll());
 
