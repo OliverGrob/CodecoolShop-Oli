@@ -23,10 +23,10 @@
                                             name="product">+ Add to cart</button>
                                     </form>
                                 </div>
-                                <a class="dropdown-item" th:href="@{'/?category=' + ${prod.getProductCategory().getName()}}"
-                                   th:text="${prod.getProductCategory().getName()}"></a>
-                                <a class="dropdown-item" th:href="@{'/?supplier=' + ${prod.getSupplier().getName()}}"
-                                   th:text="${prod.getSupplier().getName()}"></a>
+                                <a class="dropdown-item" th:href="@{'/?category=' + ${prod.getProductCategoryName()}}"
+                                   th:text="${prod.getProductCategoryName()}"></a>
+                                <a class="dropdown-item" th:href="@{'/?supplier=' + ${prod.getSupplierName()}}"
+                                   th:text="${prod.getSupplierName()}"></a>
                             </div>
                         </div>
                     </div>

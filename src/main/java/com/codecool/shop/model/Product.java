@@ -38,7 +38,7 @@ public class Product extends BaseModel {
         return String.valueOf(this.defaultPrice) + " " + this.defaultCurrency.toString();
     }
 
-    public String getPriceNumsOnly() {
+    public String getPriceNumOnly() {
         return String.valueOf(this.defaultPrice);
     }
 
@@ -51,6 +51,10 @@ public class Product extends BaseModel {
         return productCategory;
     }
 
+    public String getProductCategoryName() {
+        return productCategory.name;
+    }
+
     public void setProductCategory(ProductCategory productCategory) {
         this.productCategory = productCategory;
         this.productCategory.addProduct(this);
@@ -58,6 +62,10 @@ public class Product extends BaseModel {
 
     public Supplier getSupplier() {
         return supplier;
+    }
+
+    public String getSupplierName() {
+        return productCategory.name;
     }
 
     public void setSupplier(Supplier supplier) {

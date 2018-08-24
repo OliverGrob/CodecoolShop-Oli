@@ -21,8 +21,8 @@
                         </th>
                         <td th:text="${product.getName()}">Item</td>
                         <td>
-                            <div th:text="'Category: ' + ${product.getProductCategory().getName()}">ProductCategory</div>
-                            <div th:text="'Supplier: ' + ${product.getSupplier().getName()}">Supplier</div>
+                            <div th:text="'Category: ' + ${product.getProductCategoryName()}">ProductCategory</div>
+                            <div th:text="'Supplier: ' + ${product.getSupplierName()}">Supplier</div>
                         </td>
                         <td th:text="${product.getPrice()}">Price</td>
                         <td class="d-inline-block">
