@@ -26,12 +26,12 @@ public class ProductDaoJDBC implements ProductDao {
         return instance;
     }
 
-    public List<Product> executeQueryWithReturnValue(String query) {
+    private List<Product> executeQueryWithReturnValue(String query) {
         List<Product> resultList = new ArrayList<>();
 
         try (Connection connection = controller.getConnection();
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query);
+             ResultSet resultSet = statement.executeQuery(query)
         ) {
             while (resultSet.next()) {
                 Product data = new Product(resultSet.getInt("id"),
@@ -52,38 +52,54 @@ public class ProductDaoJDBC implements ProductDao {
     }
 
     @Override
-    public void add(Product product) {
-
+    public void add(String name, float defaultPrice, String currencyString, String description, int productCategoryId, int supplierId) {
+        controller.executeQuery(
+            "INSERT INTO product (id, name, description, default_price, currency_string, supplier_id, product_category_id)" +
+                "VALUES (DEFAULT, '" + name + "', '" + description + "', " + defaultPrice + ", " +
+                         currencyString + ", " + supplierId + ", " + productCategoryId + ";"
+        );
     }
 
     @Override
     public Product find(int id) {
-        return null;
+        return executeQueryWithReturnValue(
+            "SELECT * FROM product WHERE id = '" + id + "';"
+        ).get(0);
     }
 
     @Override
     public Product find(String name) {
-        return null;
+        return executeQueryWithReturnValue(
+            "SELECT * FROM product WHERE name LIKE '" + name + "';"
+        ).get(0);
     }
 
     @Override
     public void remove(int id) {
-
+        controller.executeQuery(
+            "DELETE FROM product WHERE id = '" + id + "';"
+        );
     }
 
     @Override
     public List<Product> getAll() {
-        return null;
+        return executeQueryWithReturnValue(
+            "SELECT * FROM product;"
+        );
     }
 
     @Override
-    public List<Product> getBy(Supplier supplier) {
-        return null;
+    public List<Product> getBy(int supplierId) {
+        return executeQueryWithReturnValue(
+            "SELECT * FROM product WHERE supplier_id = '" + supplierId + "';"
+        );
     }
 
     @Override
-    public List<Product> getBy(ProductCategory productCategory) {
-        return null;
+    public List<Product> getBy(int productCategoryId) {
+        return executeQueryWithReturnValue(
+            "SELECT * FROM product WHERE product_category_id = '" + productCategoryId + "';"
+        );
     }
 
 }
