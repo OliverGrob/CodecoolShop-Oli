@@ -6,9 +6,10 @@ import java.util.List;
 
 public interface SupplierDao {
 
-    void add(Supplier supplier);
+    void add(String name, String description);
     Supplier find(int id);
     Supplier find(String name);
+
     void remove(int id);
 
     List<Supplier> getAll();

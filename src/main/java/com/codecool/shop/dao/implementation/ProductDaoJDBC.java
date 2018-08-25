@@ -52,11 +52,11 @@ public class ProductDaoJDBC implements ProductDao {
     }
 
     @Override
-    public void add(String name, float defaultPrice, String currencyString, String description, int productCategoryId, int supplierId) {
+    public void add(String name, float defaultPrice, String currencyString, String description, ProductCategory productCategory, Supplier supplier) {
         controller.executeQuery(
             "INSERT INTO product (id, name, description, default_price, currency_string, supplier_id, product_category_id)" +
                 "VALUES (DEFAULT, '" + name + "', '" + description + "', " + defaultPrice + ", " +
-                         currencyString + ", " + supplierId + ", " + productCategoryId + ";"
+                         currencyString + ", " + supplier.getId() + ", " + productCategory.getId() + ";"
         );
     }
 
@@ -89,14 +89,14 @@ public class ProductDaoJDBC implements ProductDao {
     }
 
     @Override
-    public List<Product> getBy(int supplierId) {
+    public List<Product> getBySupplier(int supplierId) {
         return executeQueryWithReturnValue(
             "SELECT * FROM product WHERE supplier_id = '" + supplierId + "';"
         );
     }
 
     @Override
-    public List<Product> getBy(int productCategoryId) {
+    public List<Product> getByProductCategory(int productCategoryId) {
         return executeQueryWithReturnValue(
             "SELECT * FROM product WHERE product_category_id = '" + productCategoryId + "';"
         );
