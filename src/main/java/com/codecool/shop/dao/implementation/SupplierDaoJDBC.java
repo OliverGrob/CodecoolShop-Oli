@@ -24,12 +24,12 @@ public class SupplierDaoJDBC implements SupplierDao {
         return instance;
     }
 
-    public List<Supplier> executeQueryWithReturnValue(String query) {
+    private List<Supplier> executeQueryWithReturnValue(String query) {
         List<Supplier> resultList = new ArrayList<>();
 
         try (Connection connection = controller.getConnection();
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query);
+             ResultSet resultSet = statement.executeQuery(query)
         ) {
             while (resultSet.next()) {
                 Supplier data = new Supplier(resultSet.getInt("id"),
@@ -46,28 +46,39 @@ public class SupplierDaoJDBC implements SupplierDao {
     }
 
     @Override
-    public void add(Supplier supplier) {
-
+    public void add(String name, String description) {
+        controller.executeQuery(
+            "INSERT INTO supplier(id, name, description)" +
+                "VALUES (DEFAULT, '" + name + "', '" + description + "';"
+        );
     }
 
     @Override
     public Supplier find(int id) {
-        return null;
+        return executeQueryWithReturnValue(
+            "SELECT * FROM supplier WHERE id = '" + id + "';"
+        ).get(0);
     }
 
     @Override
     public Supplier find(String name) {
-        return null;
+        return executeQueryWithReturnValue(
+            "SELECT * FROM supplier WHERE name LIKE '" + name + "';"
+        ).get(0);
     }
 
     @Override
     public void remove(int id) {
-
+        controller.executeQuery(
+            "DELETE FROM supplier WHERE id = '" + id + "';"
+        );
     }
 
     @Override
     public List<Supplier> getAll() {
-        return null;
+        return executeQueryWithReturnValue(
+            "SELECT * FROM supplier;"
+        );
     }
 
 }
