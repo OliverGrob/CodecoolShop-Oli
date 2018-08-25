@@ -56,7 +56,7 @@ public class ProductDaoJDBC implements ProductDao {
         controller.executeQuery(
             "INSERT INTO product (id, name, description, default_price, currency_string, supplier_id, product_category_id)" +
                 "VALUES (DEFAULT, '" + name + "', '" + description + "', " + defaultPrice + ", " +
-                         currencyString + ", " + supplier.getId() + ", " + productCategory.getId() + ";"
+                         currencyString + ", " + supplier.getId() + ", " + productCategory.getId() + ");"
         );
     }
 

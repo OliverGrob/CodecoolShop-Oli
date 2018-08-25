@@ -54,28 +54,34 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
     public void add(int userId, Date time, ShoppingCartStatuses status) {
         controller.executeQuery(
             "INSERT INTO shopping_cart (id, user_id, time, status)" +
-                "VALUES (DEFAULT, " + userId + ", " + time + ", '" + status.getCartStatus() + "';"
+                "VALUES (DEFAULT, " + userId + ", " + time + ", '" + status.getCartStatus() + "');"
         );
     }
 
     @Override
-    public void addProductToShoppingCart(Product product) {
+    public void addProductToShoppingCart(int shoppingCartId, int productId) {
 
     }
 
     @Override
     public ShoppingCart find(int id) {
-        return null;
+        return executeQueryWithReturnValue(
+                "SELECT * FROM shopping_cart WHERE id = '" + id + "';"
+        ).get(0);
     }
 
     @Override
     public ShoppingCart findActiveCart() {
-        return null;
+        return executeQueryWithReturnValue(
+                "SELECT * FROM shopping_cart WHERE status LIKE 'in_cart';"
+        ).get(0);
     }
 
     @Override
     public void remove(int id) {
-
+        controller.executeQuery(
+                "DELETE FROM shopping_cart WHERE id = '" + id + "';"
+        );
     }
 
     @Override
@@ -85,7 +91,9 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
 
     @Override
     public List<ShoppingCart> getAll() {
-        return null;
+        return executeQueryWithReturnValue(
+                "SELECT * FROM shopping_cart;"
+        );
     }
 
     @Override

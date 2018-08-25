@@ -9,7 +9,7 @@ import java.util.Set;
 public interface ShoppingCartDao {
 
     void add(int userId, Date time, ShoppingCartStatuses status);
-    void addProductToShoppingCart(Product product);
+    void addProductToShoppingCart(int shoppingCartId, int productId);
 
     ShoppingCart find(int id);
     ShoppingCart findActiveCart();

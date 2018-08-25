@@ -49,7 +49,7 @@ public class SupplierDaoJDBC implements SupplierDao {
     public void add(String name, String description) {
         controller.executeQuery(
             "INSERT INTO supplier(id, name, description)" +
-                "VALUES (DEFAULT, '" + name + "', '" + description + "';"
+                "VALUES (DEFAULT, '" + name + "', '" + description + "');"
         );
     }
 

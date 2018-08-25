@@ -6,6 +6,7 @@ import com.codecool.shop.model.ShoppingCart;
 import com.codecool.shop.model.ShoppingCartStatuses;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ShoppingCartDaoMem implements ShoppingCartDao {
 
@@ -30,8 +31,9 @@ public class ShoppingCartDaoMem implements ShoppingCartDao {
     }
 
     @Override
-    public void addProductToShoppingCart(Product product) {
+    public void addProductToShoppingCart(int shoppingCartId, int productId) {
         ShoppingCart shoppingCart = this.findActiveCart();
+        Product product = this.getProductNumberInActiveCart().stream().filter(t -> t.getId() == productId).collect(Collectors.toList()).get(0);
         shoppingCart.getProductsInCart().add(product);
         shoppingCart.setTotalPrice(shoppingCart.getTotalPrice() + product.getDefaultPrice());
     }

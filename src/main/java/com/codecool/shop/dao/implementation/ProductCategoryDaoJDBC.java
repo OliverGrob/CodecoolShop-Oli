@@ -47,7 +47,7 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
     public void add(String name, String description, String department) {
         controller.executeQuery(
             "INSERT INTO product_category (id, name, description, department)" +
-                "VALUES (DEFAULT, '" + name + "', '" + description + "', '" + department + "';"
+                "VALUES (DEFAULT, '" + name + "', '" + description + "', '" + department + "');"
         );
     }
 
