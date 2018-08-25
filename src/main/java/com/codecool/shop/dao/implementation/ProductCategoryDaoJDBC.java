@@ -45,27 +45,29 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
 
     @Override
     public void add(ProductCategory category) {
-
+        controller.executeQuery("INSERT INTO product_category (id, name, description, department) VALUES (DEFAULT, '" +
+                                    category.getName() + "', '" + category.getDescription() + "', '" +
+                                    category.getDepartment() + "';");
     }
 
     @Override
     public ProductCategory find(int id) {
-        return null;
-    }
+            return executeQueryWithReturnValue("SELECT * FROM product_category WHERE id = '" + id + "';").get(0);
+        }
 
     @Override
     public ProductCategory find(String name) {
-        return null;
+        return executeQueryWithReturnValue("SELECT * FROM product_category WHERE name LIKE '" + name + "';").get(0);
     }
 
     @Override
     public void remove(int id) {
-
+        controller.executeQuery("DELETE FROM product_category WHERE id = '" + id + "';");
     }
 
     @Override
     public List<ProductCategory> getAll() {
-        return null;
+        return executeQueryWithReturnValue("SELECT * FROM product_category");
     }
 
 }
