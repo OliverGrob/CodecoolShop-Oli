@@ -9,12 +9,12 @@ public class ShoppingCart {
     private int id;
     private int userId;
     private Date time;
-    private String status;
+    private ShoppingCartStatuses status;
 
     private float totalPrice = 0;
     private List<Product> productsInCart = new ArrayList<>();
 
-    public ShoppingCart(int id, int userId, Date time, String status) {
+    public ShoppingCart(int id, int userId, Date time, ShoppingCartStatuses status) {
         this.id = id;
         this.userId = userId;
         this.time = time;
@@ -46,11 +46,11 @@ public class ShoppingCart {
         this.time = time;
     }
 
-    public String getStatus() {
+    public ShoppingCartStatuses getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ShoppingCartStatuses status) {
         this.status = status;
     }
 

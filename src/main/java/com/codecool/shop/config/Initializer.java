@@ -8,10 +8,7 @@ import com.codecool.shop.dao.implementation.ProductCategoryDaoMem;
 import com.codecool.shop.dao.implementation.ProductDaoMem;
 import com.codecool.shop.dao.implementation.ShoppingCartDaoMem;
 import com.codecool.shop.dao.implementation.SupplierDaoMem;
-import com.codecool.shop.model.Product;
-import com.codecool.shop.model.ProductCategory;
-import com.codecool.shop.model.ShoppingCart;
-import com.codecool.shop.model.Supplier;
+import com.codecool.shop.model.*;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -83,7 +80,7 @@ public class Initializer implements ServletContextListener {
         productDataStore.add(new Product(14, "Santa Claus Is Coming", 24, "USD", "Egynyari termek, ketszer", wintAir, airAction));
 
         //setting up starter shopping cart
-        shoppingCartDataStore.add(new ShoppingCart(1, 1, new GregorianCalendar(2018, 8, 24).getTime(), "inCart"));
+        shoppingCartDataStore.add(new ShoppingCart(1, 1, new GregorianCalendar(2018, 8, 24).getTime(), ShoppingCartStatuses.IN_CART));
 
     }
 }

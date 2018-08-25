@@ -3,6 +3,7 @@ package com.codecool.shop.dao.implementation;
 import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCart;
+import com.codecool.shop.model.ShoppingCartStatuses;
 
 import java.util.*;
 
@@ -43,7 +44,7 @@ public class ShoppingCartDaoMem implements ShoppingCartDao {
 
     @Override
     public ShoppingCart findActiveCart() {
-        return data.stream().filter(t -> t.getStatus().equals("inCart")).findFirst().orElse(null);
+        return data.stream().filter(t -> t.getStatus().equals(ShoppingCartStatuses.IN_CART)).findFirst().orElse(null);
     }
 
     @Override
