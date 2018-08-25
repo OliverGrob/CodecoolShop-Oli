@@ -4,12 +4,14 @@ import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCart;
+import com.codecool.shop.model.ShoppingCartStatuses;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -26,18 +28,18 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
         return instance;
     }
 
-    public List<ShoppingCart> executeQueryWithReturnValue(String query) {
+    private List<ShoppingCart> executeQueryWithReturnValue(String query) {
         List<ShoppingCart> resultList = new ArrayList<>();
 
         try (Connection connection = controller.getConnection();
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query);
+             ResultSet resultSet = statement.executeQuery(query)
         ) {
             while (resultSet.next()) {
                 ShoppingCart data = new ShoppingCart(resultSet.getInt("id"),
                         resultSet.getInt("user_id"),
                         resultSet.getDate("time"),
-                        resultSet.getString("status"));
+                        ShoppingCartStatuses.valueOf(resultSet.getString("status")));
                 resultList.add(data);
             }
 
@@ -49,8 +51,11 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
     }
 
     @Override
-    public void add(ShoppingCart shoppingCart) {
-
+    public void add(int userId, Date time, ShoppingCartStatuses status) {
+        controller.executeQuery(
+            "INSERT INTO shopping_cart (id, user_id, time, status)" +
+                "VALUES (DEFAULT, " + userId + ", " + time + ", '" + status.getCartStatus() + "';"
+        );
     }
 
     @Override

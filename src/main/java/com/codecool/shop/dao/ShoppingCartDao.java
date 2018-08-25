@@ -2,12 +2,13 @@ package com.codecool.shop.dao;
 
 import com.codecool.shop.model.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 public interface ShoppingCartDao {
 
-    void add(ShoppingCart shoppingCart);
+    void add(int userId, Date time, ShoppingCartStatuses status);
     void addProductToShoppingCart(Product product);
 
     ShoppingCart find(int id);
