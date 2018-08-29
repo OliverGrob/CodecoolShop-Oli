@@ -65,7 +65,7 @@ public class Product extends BaseModel {
     }
 
     public String getSupplierName() {
-        return productCategory.name;
+        return supplier.name;
     }
 
     public void setSupplier(Supplier supplier) {

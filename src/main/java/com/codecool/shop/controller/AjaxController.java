@@ -2,8 +2,10 @@ package com.codecool.shop.controller;
 
 import com.codecool.shop.dao.ProductDao;
 import com.codecool.shop.dao.ShoppingCartDao;
-import com.codecool.shop.dao.implementation.ProductDaoMem;
-import com.codecool.shop.dao.implementation.ShoppingCartDaoMem;
+import com.codecool.shop.dao.ShoppingCartProductsDao;
+import com.codecool.shop.dao.implementation.*;
+import com.codecool.shop.model.Product;
+import com.codecool.shop.model.ShoppingCartProduct;
 import com.google.gson.Gson;
 
 import javax.servlet.annotation.WebServlet;
@@ -12,18 +14,26 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @WebServlet(urlPatterns = {"/change-quantity"})
 public class AjaxController extends HttpServlet {
-    private ProductDao productDataStore = ProductDaoMem.getInstance();
-    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoMem.getInstance();
+    private ProductDao productDataStore = ProductDaoJDBC.getInstance();
+    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
+    private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Map<String, Integer> newData = new HashMap<>();
 
-        newData.put("totalItemsInCart", shoppingCartDataStore.getAllProductsInActiveCart().size());
+        int activeCartId = shoppingCartDataStore.findActiveCart().getId();
+        List<ShoppingCartProduct> shoppingCartProductsInCart = shoppingCartProductsDataStore.getShoppingCartProductsByShoppingCartId(activeCartId);
+        List<Product> productsInCart = productDataStore.getAllProductsForShoppingCart(shoppingCartProductsInCart);
+
+        int totalItemNumInCart = productsInCart.size();
+
+        newData.put("totalItemsInCart", totalItemNumInCart);
         String json = new Gson().toJson(newData);
 
         resp.setContentType("application/json");
@@ -36,17 +46,21 @@ public class AjaxController extends HttpServlet {
         Map<String, Integer> newData = new HashMap<>();
 
         int productId = Integer.parseInt(req.getParameter("id"));
+        int shoppingCartId = shoppingCartDataStore.findActiveCart().getId();
 
         if (req.getParameter("quantity").equals("decrease")) {
-            shoppingCartDataStore.removeProductFromShoppingCart(productDataStore.find(productId));
+            shoppingCartProductsDataStore.removeProductFromShoppingCart(shoppingCartDataStore.findActiveCart().getId(), productId);
         } else if (req.getParameter("quantity").equals("increase")) {
-            shoppingCartDataStore.addProductToShoppingCart(productDataStore.find(productId));
+            shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartDataStore.findActiveCart().getId(), productId);
         }
 
-        int newQuantity = (shoppingCartDataStore.getProductQuantityByProductIdInActiveCart(productId) != null) ?
-                shoppingCartDataStore.getProductQuantityByProductIdInActiveCart(productId) : 0;
-        int newTotalItems = shoppingCartDataStore.findActiveCart().getProductsInCart().size();
-        int newTotalPrice = Math.round(shoppingCartDataStore.findActiveCart().getTotalPrice() * 100) / 100;
+        int activeCartId = shoppingCartDataStore.findActiveCart().getId();
+        List<ShoppingCartProduct> shoppingCartProductsInCart = shoppingCartProductsDataStore.getShoppingCartProductsByShoppingCartId(activeCartId);
+        List<Product> productsInCart = productDataStore.getAllProductsForShoppingCart(shoppingCartProductsInCart);
+
+        int newQuantity = shoppingCartProductsDataStore.getProductQuantityByProductIdInActiveCart(shoppingCartId, productId);
+        int newTotalItems = productsInCart.size();
+        int newTotalPrice = Math.round(shoppingCartDataStore.calculateTotalPrice(productsInCart)* 100) / 100;
 
         newData.put("productId", productId);
         newData.put("newQuantity", newQuantity);

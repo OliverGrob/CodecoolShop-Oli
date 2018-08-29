@@ -2,24 +2,24 @@ package com.codecool.shop.dao.implementation;
 
 import com.codecool.shop.dao.ShoppingCartProductsDao;
 import com.codecool.shop.jdbc.JDBCController;
+import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCartProduct;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
     private static final JDBCController controller = JDBCController.getInstance();
-    private static ShoppingCartDaoJDBC instance = null;
+    private static ShoppingCartProductsDaoJDBC instance = null;
 
 
-    public static ShoppingCartDaoJDBC getInstance() {
+    public static ShoppingCartProductsDaoJDBC getInstance() {
         if (instance == null) {
-            instance = new ShoppingCartDaoJDBC();
+            instance = new ShoppingCartProductsDaoJDBC();
         }
         return instance;
     }
@@ -47,8 +47,8 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
     private List<ShoppingCartProduct> findProduct(int shoppingCartId, int productId) {
         return executeQueryWithReturnValue(
-                "SELECT * FROM shopping_cart_products" +
-                        "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
+            "SELECT * FROM shopping_cart_products " +
+                "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
         );
     }
 
@@ -58,7 +58,7 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
         if (shoppingCartProduct.size() == 0) {
             controller.executeQuery(
-                "INSERT INTO shopping_cart_products (shopping_cart_id, product_id, amount)" +
+                "INSERT INTO shopping_cart_products (shopping_cart_id, product_id, amount) " +
                     "VALUES (" + shoppingCartId + ", " + productId + ", 1);"
             );
         } else {
@@ -73,9 +73,9 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
     public void removeProductFromShoppingCart(int shoppingCartId, int productId) {
         int productAmount = this.findProduct(shoppingCartId, productId).get(0).getAmount();
 
-        if (productAmount == 0) {
+        if (productAmount == 1) {
             controller.executeQuery(
-                "DELETE FROM shopping_cart_products" +
+                "DELETE FROM shopping_cart_products " +
                     "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
             );
         } else {
@@ -87,10 +87,42 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
     }
 
     @Override
+    public List<ShoppingCartProduct> getShoppingCartProductsByShoppingCartId(int shoppingCartId) {
+        return executeQueryWithReturnValue(
+            "SELECT * FROM shopping_cart_products " +
+                "WHERE shopping_cart_id = '" + shoppingCartId + "' ORDER BY product_id;"
+        );
+    }
+
+    @Override
     public List<ShoppingCartProduct> getAll() {
         return executeQueryWithReturnValue(
             "SELECT * FROM shopping_cart_products;"
         );
+    }
+
+    @Override
+    public Integer getProductQuantityByProductIdInActiveCart(int shoppingCartId, int productId) {
+        List<ShoppingCartProduct> products =  executeQueryWithReturnValue(
+            "SELECT * FROM shopping_cart_products " +
+                "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
+        );
+
+        return (products.size() != 0) ? products.get(0).getAmount() : 0;
+    }
+
+    @Override
+    public Map<Integer, Integer> getAllProductQuantity(int shoppingCartId, Set<Product> products) {
+        Map<Integer, Integer> productsInCart = new HashMap<>();
+
+        for (Product product : products) {
+            productsInCart.put(product.getId(), executeQueryWithReturnValue(
+                "SELECT * FROM shopping_cart_products " +
+                    "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + product.getId() + "';"
+            ).get(0).getAmount());
+        }
+
+        return productsInCart;
     }
 
 }

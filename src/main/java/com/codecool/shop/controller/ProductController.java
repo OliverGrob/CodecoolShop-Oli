@@ -1,14 +1,8 @@
 package com.codecool.shop.controller;
 
-import com.codecool.shop.dao.ProductCategoryDao;
-import com.codecool.shop.dao.ProductDao;
-import com.codecool.shop.dao.ShoppingCartDao;
-import com.codecool.shop.dao.SupplierDao;
-import com.codecool.shop.dao.implementation.ProductCategoryDaoMem;
-import com.codecool.shop.dao.implementation.ProductDaoMem;
+import com.codecool.shop.dao.*;
+import com.codecool.shop.dao.implementation.*;
 import com.codecool.shop.config.TemplateEngineUtil;
-import com.codecool.shop.dao.implementation.ShoppingCartDaoMem;
-import com.codecool.shop.dao.implementation.SupplierDaoMem;
 import com.codecool.shop.model.Product;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -22,10 +16,11 @@ import java.util.List;
 
 @WebServlet(urlPatterns = {"/"})
 public class ProductController extends HttpServlet {
-    private ProductDao productDataStore = ProductDaoMem.getInstance();
-    private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoMem.getInstance();
-    private SupplierDao supplierDataStore = SupplierDaoMem.getInstance();
-    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoMem.getInstance();
+    private ProductDao productDataStore = ProductDaoJDBC.getInstance();
+    private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoJDBC.getInstance();
+    private SupplierDao supplierDataStore = SupplierDaoJDBC.getInstance();
+    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
+    private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -51,7 +46,8 @@ public class ProductController extends HttpServlet {
         String categoryNameFromUrl = req.getParameter("category");
         String supplierNameFromUrl = req.getParameter("supplier");
 
-        addProductToShoppingCart(Integer.parseInt(req.getParameter("product")), productDataStore, shoppingCartDataStore);
+        shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartDataStore.findActiveCart().getId(),
+                                                               Integer.parseInt(req.getParameter("product")));
 
         context.setVariable("category", productCategoryDataStore.getAll());
         context.setVariable("supplier", supplierDataStore.getAll());
@@ -63,10 +59,10 @@ public class ProductController extends HttpServlet {
     }
 
     private List<Product> getProducts(String categoryNameFromUrl, String supplierNameFromUrl) {
-        if (categoryNameFromUrl != null) {
-            return productDataStore.getBy(productCategoryDataStore.find(categoryNameFromUrl));
-        } else if (supplierNameFromUrl != null) {
-            return productDataStore.getBy(supplierDataStore.find(supplierNameFromUrl));
+        if (productCategoryDataStore.find(categoryNameFromUrl) != null) {
+            return productDataStore.getByProductCategory(productCategoryDataStore.find(categoryNameFromUrl).getId());
+        } else if (supplierDataStore.find(supplierNameFromUrl) != null) {
+            return productDataStore.getBySupplier(supplierDataStore.find(supplierNameFromUrl).getId());
         }
 
         return productDataStore.getAll();
@@ -80,11 +76,4 @@ public class ProductController extends HttpServlet {
         }
     }
 
-    private void addProductToShoppingCart(int productId, ProductDao productStore, ShoppingCartDao shoppingCart) {
-        for (Product item : productStore.getAll()) {
-            if (item.getId() == productId) {
-                shoppingCart.addProductToShoppingCart(item);
-            }
-        }
-    }
 }

@@ -4,7 +4,7 @@ import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCart;
-import com.codecool.shop.model.ShoppingCartStatuses;
+import com.codecool.shop.model.ShoppingCartStatus;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,7 +13,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 public class ShoppingCartDaoJDBC implements ShoppingCartDao {
 
@@ -39,7 +38,7 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
                 ShoppingCart data = new ShoppingCart(resultSet.getInt("id"),
                         resultSet.getInt("user_id"),
                         resultSet.getDate("time"),
-                        ShoppingCartStatuses.valueOf(resultSet.getString("status")));
+                        ShoppingCartStatus.valueOf(resultSet.getString("status")));
                 resultList.add(data);
             }
 
@@ -51,64 +50,54 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
     }
 
     @Override
-    public void add(int userId, Date time, ShoppingCartStatuses status) {
+    public void add(int userId, Date time, ShoppingCartStatus status) {
         controller.executeQuery(
-            "INSERT INTO shopping_cart (id, user_id, time, status)" +
-                "VALUES (DEFAULT, " + userId + ", " + time + ", '" + status.getCartStatus() + "');"
+            "INSERT INTO shopping_cart (id, user_id, time, status) " +
+                "VALUES (DEFAULT, " + userId + ", " + time + ", '" + status.toString() + "');"
         );
     }
 
     @Override
-    public void addProductToShoppingCart(int shoppingCartId, int productId) {
-
-    }
-
-    @Override
     public ShoppingCart find(int id) {
-        return executeQueryWithReturnValue(
-                "SELECT * FROM shopping_cart WHERE id = '" + id + "';"
-        ).get(0);
+        List<ShoppingCart> shoppingCarts = executeQueryWithReturnValue(
+            "SELECT * FROM shopping_cart WHERE id = '" + id + "';"
+        );
+
+        return (shoppingCarts.size() != 0) ? shoppingCarts.get(0) : null;
     }
 
     @Override
     public ShoppingCart findActiveCart() {
-        return executeQueryWithReturnValue(
-                "SELECT * FROM shopping_cart WHERE status LIKE 'in_cart';"
-        ).get(0);
+        List<ShoppingCart> shoppingCarts = executeQueryWithReturnValue(
+            "SELECT * FROM shopping_cart WHERE status LIKE 'IN_CART';"
+        );
+
+        return (shoppingCarts.size() != 0) ? shoppingCarts.get(0) : null;
     }
 
     @Override
     public void remove(int id) {
         controller.executeQuery(
-                "DELETE FROM shopping_cart WHERE id = '" + id + "';"
+            "DELETE FROM shopping_cart WHERE id = '" + id + "';"
         );
-    }
-
-    @Override
-    public void removeProductFromShoppingCart(Product product) {
-
     }
 
     @Override
     public List<ShoppingCart> getAll() {
         return executeQueryWithReturnValue(
-                "SELECT * FROM shopping_cart;"
+            "SELECT * FROM shopping_cart;"
         );
     }
 
     @Override
-    public Set<Product> getProductNumberInActiveCart() {
-        return null;
-    }
+    public float calculateTotalPrice(List<Product> allProductsInCart) {
+        float totalPrice = 0;
 
-    @Override
-    public List<Product> getAllProductsInActiveCart() {
-        return null;
-    }
+        for (Product product : allProductsInCart) {
+            totalPrice += product.getDefaultPrice();
+        }
 
-    @Override
-    public Integer getProductQuantityByProductIdInActiveCart(int id) {
-        return null;
+        return totalPrice;
     }
 
 }

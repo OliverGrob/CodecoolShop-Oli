@@ -29,7 +29,7 @@
                             <div>
                                 <i class="fas fa-minus border rounded p-2" th:id="${product.getId()}"></i>
                                 <span class="ml-3 mr-3" th:id="'quantity_' + ${product.getId()}"
-                                      th:text="${shopping_cart_data.getProductQuantityByProductIdInActiveCart(product.getId())}"></span>
+                                      th:text="${shopping_cart_data.get(product.getId())}"></span>
                                 <i class="fas fa-plus border rounded p-2" th:id="${product.getId()}"></i>
                             </div>
                         </td>
@@ -38,9 +38,9 @@
                 <tbody>
                     <tr>
                         <td class="total"></td>
-                        <td class="total" id="total_items" th:text="'Total items: ' + ${shopping_cart.getProductsInCart().size()}"></td>
+                        <td class="total" id="total_items" th:text="'Total items: ' + ${totalItemNum}"></td>
                         <td class="total"></td>
-                        <td class="total" id="total_price" th:text="'Total price: ' + ${shopping_cart.getTotalPrice()} + ' USD'"></td>
+                        <td class="total" id="total_price" th:text="'Total price: ' + ${totalPrice} + ' USD'"></td>
                         <td class="total">
                             <a class="btn btn-info btn-outline-info" th:href="@{'/checkout'}" role="button">
                                 Proceed to checkout

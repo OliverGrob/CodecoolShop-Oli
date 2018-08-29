@@ -4,14 +4,14 @@ import com.codecool.shop.dao.ProductDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ProductCategory;
+import com.codecool.shop.model.ShoppingCartProduct;
 import com.codecool.shop.model.Supplier;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ProductDaoJDBC implements ProductDao {
 
@@ -54,7 +54,7 @@ public class ProductDaoJDBC implements ProductDao {
     @Override
     public void add(String name, float defaultPrice, String currencyString, String description, ProductCategory productCategory, Supplier supplier) {
         controller.executeQuery(
-            "INSERT INTO product (id, name, description, default_price, currency_string, supplier_id, product_category_id)" +
+            "INSERT INTO product (id, name, description, default_price, currency_string, supplier_id, product_category_id) " +
                 "VALUES (DEFAULT, '" + name + "', '" + description + "', " + defaultPrice + ", " +
                          currencyString + ", " + supplier.getId() + ", " + productCategory.getId() + ");"
         );
@@ -62,16 +62,20 @@ public class ProductDaoJDBC implements ProductDao {
 
     @Override
     public Product find(int id) {
-        return executeQueryWithReturnValue(
+        List<Product> products = executeQueryWithReturnValue(
             "SELECT * FROM product WHERE id = '" + id + "';"
-        ).get(0);
+        );
+
+        return (products.size() != 0) ? products.get(0) : null;
     }
 
     @Override
     public Product find(String name) {
-        return executeQueryWithReturnValue(
+        List<Product> products = executeQueryWithReturnValue(
             "SELECT * FROM product WHERE name LIKE '" + name + "';"
-        ).get(0);
+        );
+
+        return (products.size() != 0) ? products.get(0) : null;
     }
 
     @Override
@@ -100,6 +104,40 @@ public class ProductDaoJDBC implements ProductDao {
         return executeQueryWithReturnValue(
             "SELECT * FROM product WHERE product_category_id = '" + productCategoryId + "';"
         );
+    }
+
+    @Override
+    public List<Product> getAllProductsForShoppingCart(List<ShoppingCartProduct> shoppingCartProducts) {
+        List<Product> productsInCart = new ArrayList<>();
+
+        for (ShoppingCartProduct shoppingCartProduct : shoppingCartProducts) {
+            Product product = executeQueryWithReturnValue(
+                "SELECT * FROM product WHERE id = '" + shoppingCartProduct.getProductId() + "';"
+            ).get(0);
+
+            for (int i = 0; i < shoppingCartProduct.getAmount(); i++) {
+                productsInCart.add(product);
+            }
+        }
+
+        return productsInCart;
+    }
+
+    @Override
+    public Set<Product> getProductsForShoppingCart(List<ShoppingCartProduct> shoppingCartProducts) {
+        Set<Product> productsInCart = new LinkedHashSet<>();
+
+        for (ShoppingCartProduct shoppingCartProduct : shoppingCartProducts) {
+            Product product = executeQueryWithReturnValue(
+                "SELECT * FROM product WHERE id = '" + shoppingCartProduct.getProductId() + "';"
+            ).get(0);
+
+            for (int i = 0; i < shoppingCartProduct.getAmount(); i++) {
+                productsInCart.add(product);
+            }
+        }
+
+        return productsInCart;
     }
 
 }

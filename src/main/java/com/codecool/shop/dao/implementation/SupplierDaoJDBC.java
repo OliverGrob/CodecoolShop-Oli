@@ -48,23 +48,27 @@ public class SupplierDaoJDBC implements SupplierDao {
     @Override
     public void add(String name, String description) {
         controller.executeQuery(
-            "INSERT INTO supplier(id, name, description)" +
+            "INSERT INTO supplier(id, name, description) " +
                 "VALUES (DEFAULT, '" + name + "', '" + description + "');"
         );
     }
 
     @Override
     public Supplier find(int id) {
-        return executeQueryWithReturnValue(
+        List<Supplier> suppliers = executeQueryWithReturnValue(
             "SELECT * FROM supplier WHERE id = '" + id + "';"
-        ).get(0);
+        );
+
+        return (suppliers.size() != 0) ? suppliers.get(0) : null;
     }
 
     @Override
     public Supplier find(String name) {
-        return executeQueryWithReturnValue(
+        List<Supplier> suppliers = executeQueryWithReturnValue(
             "SELECT * FROM supplier WHERE name LIKE '" + name + "';"
-        ).get(0);
+        );
+
+        return (suppliers.size() != 0) ? suppliers.get(0) : null;
     }
 
     @Override
