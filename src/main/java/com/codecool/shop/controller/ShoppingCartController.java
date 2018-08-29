@@ -12,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -29,33 +30,40 @@ public class ShoppingCartController extends HttpServlet {
         TemplateEngine engine = TemplateEngineUtil.getTemplateEngine(req.getServletContext());
         WebContext context = new WebContext(req, resp, req.getServletContext());
 
-        // Getting Products for shopping cart: (1) Getting active Cart's id -> (2) Getting ShoppingCartProducts -> (3) Getting Products
-        // 1
-        int activeCartId = shoppingCartDataStore.findActiveCart().getId();
-        // 2
-        List<ShoppingCartProduct> shoppingCartProductsInCart = shoppingCartProductsDataStore.getShoppingCartProductsByShoppingCartId(activeCartId);
-        // 3
-        Set<Product> productsInCart = productDataStore.getProductsForShoppingCart(shoppingCartProductsInCart);
-        List<Product> allProductsInCart = productDataStore.getAllProductsForShoppingCart(shoppingCartProductsInCart);
+        HttpSession session = req.getSession(false);
 
-        // Getting total item count
-        int totalItemNumInCart = allProductsInCart.size();
-        // Getting total price for cart
-        float totalPrice = shoppingCartDataStore.calculateTotalPrice(allProductsInCart);
+        if (session == null) {
+            session = req.getSession(true);
+            session.setAttribute("userId", null);
+            resp.sendRedirect("/");
+        } else {
+            if (session.getAttribute("userId") == null) {
+                resp.sendRedirect("/");
+            } else {
+                // Getting Products for shopping cart: (1) Getting active Cart's id -> (2) Getting ShoppingCartProducts -> (3) Getting Products
+                // 1
+                int activeCartId = shoppingCartDataStore.findActiveCart().getId();
+                // 2
+                List<ShoppingCartProduct> shoppingCartProductsInCart = shoppingCartProductsDataStore.getShoppingCartProductsByShoppingCartId(activeCartId);
+                // 3
+                Set<Product> productsInCart = productDataStore.getProductsForShoppingCart(shoppingCartProductsInCart);
+                List<Product> allProductsInCart = productDataStore.getAllProductsForShoppingCart(shoppingCartProductsInCart);
 
-        context.setVariable("products", productsInCart);
-        context.setVariable("shopping_cart_data", shoppingCartProductsDataStore.getAllProductQuantity(activeCartId, productsInCart));
-        context.setVariable("totalItemNum", totalItemNumInCart);
-        context.setVariable("totalPrice", totalPrice);
-        context.setVariable("category", productCategoryDataStore.getAll());
-        context.setVariable("supplier", supplierDataStore.getAll());
+                // Getting total item count
+                int totalItemNumInCart = allProductsInCart.size();
+                // Getting total price for cart
+                float totalPrice = shoppingCartDataStore.calculateTotalPrice(allProductsInCart);
 
-//        HttpSession session = req.getSession();
-//        session.setAttribute("shopping_cart", shoppingCartDataStore);
-//        session.setAttribute("totalItems", shoppingCartDataStore.getSize());
-//        session.setAttribute("totalPrice", shoppingCartDataStore.getTotalPrice());
-        
-        engine.process("cart/shopping_cart.html", context, resp.getWriter());
+                context.setVariable("products", productsInCart);
+                context.setVariable("shopping_cart_data", shoppingCartProductsDataStore.getAllProductQuantity(activeCartId, productsInCart));
+                context.setVariable("totalItemNum", totalItemNumInCart);
+                context.setVariable("totalPrice", totalPrice);
+                context.setVariable("category", productCategoryDataStore.getAll());
+                context.setVariable("supplier", supplierDataStore.getAll());
+
+                engine.process("cart/shopping_cart.html", context, resp.getWriter());
+            }
+        }
     }
 
 }
