@@ -16,3 +16,8 @@
 - AjaxController.java - changed Maps to HashMap from LinkedHashMap (no need to be linked)
                       - changed Map<String, String> to Map<String, Integer> -> no need to convert ints to strings anymore
 - ----- Do we want Footers?? -----
+
+TODO ------------------------------------------------------
+
+- use less calls to SQL, no for-s etc.
+- how to use JOIN-s in SQL
