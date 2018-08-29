@@ -21,3 +21,4 @@ TODO ------------------------------------------------------
 
 - use less calls to SQL, no for-s etc.
 - how to use JOIN-s in SQL
+- prepared statements in queries
