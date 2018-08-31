@@ -19,6 +19,6 @@
 
 TODO ------------------------------------------------------
 
-- use less calls to SQL, no for-s etc.
+- use less calls to SQL, no for-s etc. -> how to make joined queries into classes?
 - how to use JOIN-s in SQL
-- prepared statements in queries
+- prepared statements in queries -> prevent SQL injection
