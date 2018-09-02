@@ -33,17 +33,6 @@ public class JDBCController {
         return instance;
     }
 
-    public void executeQueryNotPreparedStatement(String query) {
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement()
-        ) {
-            statement.execute(query);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void executeQuery(String query, List<Object> parameters) {
         Connection connection = getConnection();
         PreparedStatement preparedStatement = null;
