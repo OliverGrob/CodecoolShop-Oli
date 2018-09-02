@@ -6,13 +6,9 @@ import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCart;
 import com.codecool.shop.model.ShoppingCartStatus;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
+import java.sql.*;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
 
 public class ShoppingCartDaoJDBC implements ShoppingCartDao {
 
@@ -27,13 +23,19 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
         return instance;
     }
 
-    private List<ShoppingCart> executeQueryWithReturnValue(String query) {
+    private List<ShoppingCart> executeQueryWithReturnValue(String query, List<Object> parameters) {
+        Connection connection = controller.getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
         List<ShoppingCart> resultList = new ArrayList<>();
 
-        try (Connection connection = controller.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)
-        ) {
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            for (int i = 0; i < parameters.size(); i++) {
+                preparedStatement.setObject(i + 1, parameters.get(i));
+            }
+            resultSet = preparedStatement.executeQuery();
+
             while (resultSet.next()) {
                 ShoppingCart data = new ShoppingCart(resultSet.getInt("id"),
                         resultSet.getInt("user_id"),
@@ -44,6 +46,11 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
+
+        } finally {
+            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
 
         return resultList;
@@ -51,17 +58,17 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
 
     @Override
     public void add(int userId, Date time, ShoppingCartStatus status) {
-        controller.executeQueryNotPreparedStatement(
-            "INSERT INTO shopping_cart (id, user_id, time, status) " +
-                "VALUES (DEFAULT, " + userId + ", " + time + ", '" + status.toString() + "');"
-        );
+        controller.executeQuery(
+        "INSERT INTO shopping_cart (id, user_id, time, status) " +
+                "VALUES (DEFAULT, ?, ?, ?);",
+            Arrays.asList(userId, time, status.toString()));
     }
 
     @Override
     public ShoppingCart find(int id) {
         List<ShoppingCart> shoppingCarts = executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart WHERE id = '" + id + "';"
-        );
+        "SELECT * FROM shopping_cart WHERE id = ?;",
+            Collections.singletonList(id));
 
         return (shoppingCarts.size() != 0) ? shoppingCarts.get(0) : null;
     }
@@ -69,24 +76,24 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
     @Override
     public ShoppingCart findActiveCart() {
         List<ShoppingCart> shoppingCarts = executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart WHERE status LIKE 'IN_CART';"
-        );
+        "SELECT * FROM shopping_cart WHERE status LIKE ?;",
+            Collections.singletonList("IN_CART"));
 
         return (shoppingCarts.size() != 0) ? shoppingCarts.get(0) : null;
     }
 
     @Override
     public void remove(int id) {
-        controller.executeQueryNotPreparedStatement(
-            "DELETE FROM shopping_cart WHERE id = '" + id + "';"
-        );
+        controller.executeQuery(
+        "DELETE FROM shopping_cart WHERE id = ?;",
+            Collections.singletonList(id));
     }
 
     @Override
     public List<ShoppingCart> getAll() {
         return executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart;"
-        );
+        "SELECT * FROM shopping_cart;",
+            Collections.emptyList());
     }
 
     @Override

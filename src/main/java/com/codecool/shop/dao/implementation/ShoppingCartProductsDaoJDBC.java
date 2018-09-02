@@ -5,10 +5,7 @@ import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCartProduct;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
@@ -24,13 +21,19 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
         return instance;
     }
 
-    private List<ShoppingCartProduct> executeQueryWithReturnValue(String query) {
+    private List<ShoppingCartProduct> executeQueryWithReturnValue(String query, List<Object> parameters) {
+        Connection connection = controller.getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
         List<ShoppingCartProduct> resultList = new ArrayList<>();
 
-        try (Connection connection = controller.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)
-        ) {
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            for (int i = 0; i < parameters.size(); i++) {
+                preparedStatement.setObject(i + 1, parameters.get(i));
+            }
+            resultSet = preparedStatement.executeQuery();
+
             while (resultSet.next()) {
                 ShoppingCartProduct data = new ShoppingCartProduct(resultSet.getInt("shopping_cart_id"),
                         resultSet.getInt("product_id"),
@@ -40,6 +43,11 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
+
+        } finally {
+            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
 
         return resultList;
@@ -47,9 +55,9 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
     private List<ShoppingCartProduct> findProduct(int shoppingCartId, int productId) {
         return executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart_products " +
-                "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
-        );
+        "SELECT * FROM shopping_cart_products " +
+                "WHERE shopping_cart_id = ? AND product_id = ?;",
+            Arrays.asList(shoppingCartId, productId));
     }
 
     @Override
@@ -57,15 +65,15 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
         List<ShoppingCartProduct> shoppingCartProduct = this.findProduct(shoppingCartId, productId);
 
         if (shoppingCartProduct.size() == 0) {
-            controller.executeQueryNotPreparedStatement(
-                "INSERT INTO shopping_cart_products (shopping_cart_id, product_id, amount) " +
-                    "VALUES (" + shoppingCartId + ", " + productId + ", 1);"
-            );
+            controller.executeQuery(
+            "INSERT INTO shopping_cart_products (shopping_cart_id, product_id, amount) " +
+                    "VALUES (?, ?, 1);",
+                Arrays.asList(shoppingCartId, productId));
         } else {
-            controller.executeQueryNotPreparedStatement(
-                "UPDATE shopping_cart_products SET amount = " + (shoppingCartProduct.get(0).getAmount() + 1) + " " +
-                    "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
-            );
+            controller.executeQuery(
+            "UPDATE shopping_cart_products SET amount = (? + 1) " +
+                    "WHERE shopping_cart_id = ? AND product_id = ?;",
+                Arrays.asList(shoppingCartProduct.get(0).getAmount(), shoppingCartId, productId));
         }
     }
 
@@ -74,39 +82,39 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
         int productAmount = this.findProduct(shoppingCartId, productId).get(0).getAmount();
 
         if (productAmount == 1) {
-            controller.executeQueryNotPreparedStatement(
-                "DELETE FROM shopping_cart_products " +
-                    "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
-            );
+            controller.executeQuery(
+            "DELETE FROM shopping_cart_products " +
+                    "WHERE shopping_cart_id = ? AND product_id = ?;",
+                Arrays.asList(shoppingCartId, productId));
         } else {
-            controller.executeQueryNotPreparedStatement(
-                "UPDATE shopping_cart_products SET amount = " + (productAmount - 1) + " " +
-                    "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
-            );
+            controller.executeQuery(
+            "UPDATE shopping_cart_products SET amount = (? - 1) " +
+                    "WHERE shopping_cart_id = ? AND product_id = ?;",
+                Arrays.asList(productAmount, shoppingCartId, productId));
         }
     }
 
     @Override
     public List<ShoppingCartProduct> getShoppingCartProductsByShoppingCartId(int shoppingCartId) {
         return executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart_products " +
-                "WHERE shopping_cart_id = '" + shoppingCartId + "' ORDER BY product_id;"
-        );
+        "SELECT * FROM shopping_cart_products " +
+            "WHERE shopping_cart_id = ? ORDER BY product_id;",
+            Collections.singletonList(shoppingCartId));
     }
 
     @Override
     public List<ShoppingCartProduct> getAll() {
         return executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart_products;"
-        );
+        "SELECT * FROM shopping_cart_products;",
+            Collections.emptyList());
     }
 
     @Override
     public Integer getProductQuantityByProductIdInActiveCart(int shoppingCartId, int productId) {
         List<ShoppingCartProduct> products =  executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart_products " +
-                "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
-        );
+        "SELECT * FROM shopping_cart_products " +
+                "WHERE shopping_cart_id = ? AND product_id = ?;",
+            Arrays.asList(shoppingCartId, productId));
 
         return (products.size() != 0) ? products.get(0).getAmount() : 0;
     }
@@ -117,8 +125,9 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
         for (Product product : products) {
             productsInCart.put(product.getId(), executeQueryWithReturnValue(
-                "SELECT * FROM shopping_cart_products " +
-                    "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + product.getId() + "';"
+            "SELECT * FROM shopping_cart_products " +
+                    "WHERE shopping_cart_id = ? AND product_id = ?;",
+                Arrays.asList(shoppingCartId, product.getId())
             ).get(0).getAmount());
         }
 

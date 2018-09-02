@@ -4,11 +4,10 @@ import com.codecool.shop.dao.UserDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.User;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class UserDaoJDBC implements UserDao {
@@ -24,13 +23,19 @@ public class UserDaoJDBC implements UserDao {
         return instance;
     }
 
-    private List<User> executeQueryWithReturnValue(String query) {
+    private List<User> executeQueryWithReturnValue(String query, List<Object> parameters) {
+        Connection connection = controller.getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
         List<User> resultList = new ArrayList<>();
 
-        try (Connection connection = controller.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)
-        ) {
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            for (int i = 0; i < parameters.size(); i++) {
+                preparedStatement.setObject(i + 1, parameters.get(i));
+            }
+            resultSet = preparedStatement.executeQuery();
+
             while (resultSet.next()) {
                 User data = new User(resultSet.getInt("id"),
                         resultSet.getString("email_address"),
@@ -47,6 +52,11 @@ public class UserDaoJDBC implements UserDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
+
+        } finally {
+            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
 
         return resultList;
@@ -54,28 +64,27 @@ public class UserDaoJDBC implements UserDao {
 
     @Override
     public void add(String emailAddress, String password) {
-        controller.executeQueryNotPreparedStatement(
-            "INSERT INTO users (id, email_address, password, first_name, last_name, country, city, address, zip_code, is_shipping_same) " +
-                "VALUES (DEFAULT, '" +  emailAddress + "', '" + password + "', 'None',  'None', 'None', 'None', 'None', 'None', false);"
-        );
+        controller.executeQuery(
+        "INSERT INTO users (id, email_address, password, first_name, last_name, country, city, address, zip_code, is_shipping_same) " +
+                "VALUES (DEFAULT, ?, ?, 'None',  'None', 'None', 'None', 'None', 'None', false);",
+            Arrays.asList(emailAddress, password));
     }
 
     @Override
     public void add(String emailAddress, String password, String firstName, String lastName, String country,
                     String city, String address, String zipCode, boolean isShippingSame) {
-        controller.executeQueryNotPreparedStatement(
-            "INSERT INTO users (id, email_address, password, first_name, last_name, country, " +
-                    "city, address, zip_code, is_shipping_same) " +
-                "VALUES (DEFAULT, '" +  emailAddress + "', '" + password + "', '" + firstName + "', '" + lastName +
-                    "', '" + country + "', '" + city + "', '" + address + "', '" + zipCode + "', " + isShippingSame + ");"
-        );
+        controller.executeQuery(
+        "INSERT INTO users (id, email_address, password, first_name, last_name, country, " +
+                "city, address, zip_code, is_shipping_same) " +
+                "VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            Arrays.asList(emailAddress, password, firstName, lastName, country, city, address, zipCode, isShippingSame));
     }
 
     @Override
     public User find(int id) {
         List<User> users = executeQueryWithReturnValue(
-            "SELECT * FROM users WHERE id = '" + id + "';"
-        );
+        "SELECT * FROM users WHERE id = ?;",
+            Collections.singletonList(id));
 
         return (users.size() != 0) ? users.get(0) : null;
     }
@@ -83,24 +92,24 @@ public class UserDaoJDBC implements UserDao {
     @Override
     public User find(String email) {
         List<User> users = executeQueryWithReturnValue(
-            "SELECT * FROM users WHERE email_address LIKE '" + email + "';"
-        );
+        "SELECT * FROM users WHERE email_address LIKE ?;",
+            Collections.singletonList(email));
 
         return (users.size() != 0) ? users.get(0) : null;
     }
 
     @Override
     public void remove(int id) {
-        controller.executeQueryNotPreparedStatement(
-            "DELETE FROM users WHERE id = '" + id + "';"
-        );
+        controller.executeQuery(
+        "DELETE FROM users WHERE id = ?;",
+            Collections.singletonList(id));
     }
 
     @Override
     public List<User> getAll() {
         return executeQueryWithReturnValue(
-            "SELECT * FROM users;"
-        );
+        "SELECT * FROM users;",
+            Collections.emptyList());
     }
 
 }
