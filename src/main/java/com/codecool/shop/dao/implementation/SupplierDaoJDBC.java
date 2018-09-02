@@ -47,7 +47,7 @@ public class SupplierDaoJDBC implements SupplierDao {
 
     @Override
     public void add(String name, String description) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "INSERT INTO supplier(id, name, description) " +
                 "VALUES (DEFAULT, '" + name + "', '" + description + "');"
         );
@@ -73,7 +73,7 @@ public class SupplierDaoJDBC implements SupplierDao {
 
     @Override
     public void remove(int id) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "DELETE FROM supplier WHERE id = '" + id + "';"
         );
     }

@@ -57,12 +57,12 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
         List<ShoppingCartProduct> shoppingCartProduct = this.findProduct(shoppingCartId, productId);
 
         if (shoppingCartProduct.size() == 0) {
-            controller.executeQuery(
+            controller.executeQueryNotPreparedStatement(
                 "INSERT INTO shopping_cart_products (shopping_cart_id, product_id, amount) " +
                     "VALUES (" + shoppingCartId + ", " + productId + ", 1);"
             );
         } else {
-            controller.executeQuery(
+            controller.executeQueryNotPreparedStatement(
                 "UPDATE shopping_cart_products SET amount = " + (shoppingCartProduct.get(0).getAmount() + 1) + " " +
                     "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
             );
@@ -74,12 +74,12 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
         int productAmount = this.findProduct(shoppingCartId, productId).get(0).getAmount();
 
         if (productAmount == 1) {
-            controller.executeQuery(
+            controller.executeQueryNotPreparedStatement(
                 "DELETE FROM shopping_cart_products " +
                     "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
             );
         } else {
-            controller.executeQuery(
+            controller.executeQueryNotPreparedStatement(
                 "UPDATE shopping_cart_products SET amount = " + (productAmount - 1) + " " +
                     "WHERE shopping_cart_id = '" + shoppingCartId + "' AND product_id = '" + productId + "';"
             );

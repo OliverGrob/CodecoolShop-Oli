@@ -54,7 +54,7 @@ public class UserDaoJDBC implements UserDao {
 
     @Override
     public void add(String emailAddress, String password) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "INSERT INTO users (id, email_address, password, first_name, last_name, country, city, address, zip_code, is_shipping_same) " +
                 "VALUES (DEFAULT, '" +  emailAddress + "', '" + password + "', 'None',  'None', 'None', 'None', 'None', 'None', false);"
         );
@@ -63,7 +63,7 @@ public class UserDaoJDBC implements UserDao {
     @Override
     public void add(String emailAddress, String password, String firstName, String lastName, String country,
                     String city, String address, String zipCode, boolean isShippingSame) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "INSERT INTO users (id, email_address, password, first_name, last_name, country, " +
                     "city, address, zip_code, is_shipping_same) " +
                 "VALUES (DEFAULT, '" +  emailAddress + "', '" + password + "', '" + firstName + "', '" + lastName +
@@ -91,7 +91,7 @@ public class UserDaoJDBC implements UserDao {
 
     @Override
     public void remove(int id) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "DELETE FROM users WHERE id = '" + id + "';"
         );
     }

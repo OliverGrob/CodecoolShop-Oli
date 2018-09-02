@@ -51,7 +51,7 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
 
     @Override
     public void add(int userId, Date time, ShoppingCartStatus status) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "INSERT INTO shopping_cart (id, user_id, time, status) " +
                 "VALUES (DEFAULT, " + userId + ", " + time + ", '" + status.toString() + "');"
         );
@@ -77,7 +77,7 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
 
     @Override
     public void remove(int id) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "DELETE FROM shopping_cart WHERE id = '" + id + "';"
         );
     }

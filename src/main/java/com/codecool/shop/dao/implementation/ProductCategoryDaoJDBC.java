@@ -45,7 +45,7 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
 
     @Override
     public void add(String name, String description, String department) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "INSERT INTO product_category (id, name, description, department) " +
                 "VALUES (DEFAULT, '" + name + "', '" + description + "', '" + department + "');"
         );
@@ -71,7 +71,7 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
 
     @Override
     public void remove(int id) {
-        controller.executeQuery(
+        controller.executeQueryNotPreparedStatement(
             "DELETE FROM product_category WHERE id = '" + id + "';"
         );
     }
