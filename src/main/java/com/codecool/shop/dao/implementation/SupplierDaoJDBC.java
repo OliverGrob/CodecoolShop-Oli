@@ -4,11 +4,7 @@ import com.codecool.shop.dao.SupplierDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.Supplier;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class SupplierDaoJDBC implements SupplierDao {
 
@@ -23,36 +19,24 @@ public class SupplierDaoJDBC implements SupplierDao {
         return instance;
     }
 
-    private List<Supplier> executeQueryWithReturnValue(String query, List<Object> parameters) {
-        Connection connection = controller.getConnection();
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        List<Supplier> resultList = new ArrayList<>();
+    private Supplier singleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        Map<String, Object> singleRow = resultRowsFromQuery.get(0);
 
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            for (int i = 0; i < parameters.size(); i++) {
-                preparedStatement.setObject(i + 1, parameters.get(i));
-            }
-            resultSet = preparedStatement.executeQuery();
+        return new Supplier((Integer) singleRow.get("id"),
+                (String) singleRow.get("name"),
+                (String) singleRow.get("description"));
+    }
 
-            while (resultSet.next()) {
-                Supplier data = new Supplier(resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("description"));
-                resultList.add(data);
-            }
+    private List<Supplier> multipleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        List<Supplier> productCategories = new ArrayList<>();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        for (Map singleRow : resultRowsFromQuery) {
+            productCategories.add(new Supplier((Integer) singleRow.get("id"),
+                    (String) singleRow.get("name"),
+                    (String) singleRow.get("description")));
         }
 
-        return resultList;
+        return productCategories;
     }
 
     @Override
@@ -65,20 +49,20 @@ public class SupplierDaoJDBC implements SupplierDao {
 
     @Override
     public Supplier find(int id) {
-        List<Supplier> suppliers = executeQueryWithReturnValue(
+        List<Map<String, Object>> suppliers = controller.executeQueryWithReturnValue(
         "SELECT * FROM supplier WHERE id = ?;",
             Collections.singletonList(id));
 
-        return (suppliers.size() != 0) ? suppliers.get(0) : null;
+        return (suppliers.size() != 0) ? this.singleObjectCreator(suppliers) : null;
     }
 
     @Override
     public Supplier find(String name) {
-        List<Supplier> suppliers = executeQueryWithReturnValue(
+        List<Map<String, Object>> suppliers = controller.executeQueryWithReturnValue(
         "SELECT * FROM supplier WHERE name LIKE ?;",
             Collections.singletonList(name));
 
-        return (suppliers.size() != 0) ? suppliers.get(0) : null;
+        return (suppliers.size() != 0) ? this.singleObjectCreator(suppliers) : null;
     }
 
     @Override
@@ -90,9 +74,9 @@ public class SupplierDaoJDBC implements SupplierDao {
 
     @Override
     public List<Supplier> getAll() {
-        return executeQueryWithReturnValue(
+        return this.multipleObjectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM supplier;",
-            Collections.emptyList());
+            Collections.emptyList()));
     }
 
 }

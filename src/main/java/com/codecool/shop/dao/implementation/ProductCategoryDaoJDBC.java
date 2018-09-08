@@ -4,7 +4,6 @@ import com.codecool.shop.dao.ProductCategoryDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.ProductCategory;
 
-import java.sql.*;
 import java.util.*;
 
 public class ProductCategoryDaoJDBC implements ProductCategoryDao {
@@ -20,8 +19,8 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
         return instance;
     }
 
-    private ProductCategory singleObjectCreator(List<Map<String,Object>> resultFromQuery) {
-        Map<String, Object> singleRow = resultFromQuery.get(0);
+    private ProductCategory singleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        Map<String, Object> singleRow = resultRowsFromQuery.get(0);
 
         return new ProductCategory((Integer) singleRow.get("id"),
                 (String) singleRow.get("name"),
@@ -29,10 +28,10 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
                 (String) singleRow.get("department"));
     }
 
-    private List<ProductCategory> multipleObjectCreator(List<Map<String,Object>> resultFromQuery) {
+    private List<ProductCategory> multipleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
         List<ProductCategory> productCategories = new ArrayList<>();
 
-        for (Map singleRow : resultFromQuery) {
+        for (Map singleRow : resultRowsFromQuery) {
             productCategories.add(new ProductCategory((Integer) singleRow.get("id"),
                     (String) singleRow.get("name"),
                     (String) singleRow.get("description"),
