@@ -5,10 +5,7 @@ import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.ProductCategory;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class ProductCategoryDaoJDBC implements ProductCategoryDao {
 
@@ -23,37 +20,26 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
         return instance;
     }
 
-    private List<ProductCategory> executeQueryWithReturnValue(String query, List<Object> parameters) {
-        Connection connection = controller.getConnection();
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        List<ProductCategory> resultList = new ArrayList<>();
+    private ProductCategory singleObjectCreator(List<Map<String,Object>> resultFromQuery) {
+        Map<String, Object> singleRow = resultFromQuery.get(0);
 
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            for (int i = 0; i < parameters.size(); i++) {
-                preparedStatement.setObject(i + 1, parameters.get(i));
-            }
-            resultSet = preparedStatement.executeQuery();
+        return new ProductCategory((Integer) singleRow.get("id"),
+                (String) singleRow.get("name"),
+                (String) singleRow.get("description"),
+                (String) singleRow.get("department"));
+    }
 
-            while (resultSet.next()) {
-                ProductCategory data = new ProductCategory(resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("description"),
-                        resultSet.getString("department"));
-                resultList.add(data);
-            }
+    private List<ProductCategory> multipleObjectCreator(List<Map<String,Object>> resultFromQuery) {
+        List<ProductCategory> productCategories = new ArrayList<>();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        for (Map singleRow : resultFromQuery) {
+            productCategories.add(new ProductCategory((Integer) singleRow.get("id"),
+                    (String) singleRow.get("name"),
+                    (String) singleRow.get("description"),
+                    (String) singleRow.get("department")));
         }
 
-        return resultList;
+        return productCategories;
     }
 
     @Override
@@ -66,20 +52,20 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
 
     @Override
     public ProductCategory find(int id) {
-        List<ProductCategory> productCategories = executeQueryWithReturnValue(
+        List<Map<String, Object>> productCategories = controller.executeQueryWithReturnValue(
         "SELECT * FROM product_category WHERE id = ?;",
             Collections.singletonList(id));
 
-        return (productCategories.size() != 0) ? productCategories.get(0) : null;
+        return (productCategories.size() != 0) ? this.singleObjectCreator(productCategories) : null;
     }
 
     @Override
     public ProductCategory find(String name) {
-        List<ProductCategory> productCategories = executeQueryWithReturnValue(
+        List<Map<String, Object>> productCategories = controller.executeQueryWithReturnValue(
         "SELECT * FROM product_category WHERE name LIKE ?;",
             Collections.singletonList(name));
 
-        return (productCategories.size() != 0) ? productCategories.get(0) : null;
+        return (productCategories.size() != 0) ? this.singleObjectCreator(productCategories) : null;
     }
 
     @Override
@@ -91,9 +77,9 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
 
     @Override
     public List<ProductCategory> getAll() {
-        return executeQueryWithReturnValue(
+        return this.multipleObjectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM product_category;",
-            Collections.emptyList());
+            Collections.emptyList()));
     }
 
 }
