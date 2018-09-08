@@ -1,7 +1,10 @@
 package com.codecool.shop.jdbc;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JDBCController {
 
@@ -50,6 +53,44 @@ public class JDBCController {
             try { if (preparedStatement != null) preparedStatement.close(); } catch (Exception e) { e.printStackTrace(); }
             try { if (connection != null) connection.close(); } catch (Exception e) { e.printStackTrace(); }
         }
+    }
+
+    public List<Map<String, Object>> executeQueryWithReturnValue(String query, List<Object> parameters) {
+        Connection connection = this.getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            for (int i = 0; i < parameters.size(); i++) {
+                preparedStatement.setObject(i + 1, parameters.get(i));
+            }
+            resultSet = preparedStatement.executeQuery();
+
+            int numOfCols = resultSet.getMetaData().getColumnCount();
+
+            while (resultSet.next()) {
+                Map<String, Object> data = new HashMap<>();
+
+                for (int i = 0; i < numOfCols; i++) {
+                    data.put(resultSet.getMetaData().getColumnName(i + 1),
+                             resultSet.getObject(i + 1));
+                }
+
+                resultList.add(data);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+
+        return resultList;
     }
 
 }

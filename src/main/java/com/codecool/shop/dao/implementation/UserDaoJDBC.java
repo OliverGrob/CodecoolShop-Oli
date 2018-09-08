@@ -13,12 +13,12 @@ import java.util.List;
 public class UserDaoJDBC implements UserDao {
 
     private static final JDBCController controller = JDBCController.getInstance();
-    private static ProductDaoJDBC instance = null;
+    private static UserDaoJDBC instance = null;
 
 
-    public static ProductDaoJDBC getInstance() {
+    public static UserDaoJDBC getInstance() {
         if (instance == null) {
-            instance = new ProductDaoJDBC();
+            instance = new UserDaoJDBC();
         }
         return instance;
     }

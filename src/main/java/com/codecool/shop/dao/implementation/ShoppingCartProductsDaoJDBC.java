@@ -98,7 +98,7 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
     public List<ShoppingCartProduct> getShoppingCartProductsByShoppingCartId(int shoppingCartId) {
         return executeQueryWithReturnValue(
         "SELECT * FROM shopping_cart_products " +
-            "WHERE shopping_cart_id = ? ORDER BY product_id;",
+                 "WHERE shopping_cart_id = ? ORDER BY product_id;",
             Collections.singletonList(shoppingCartId));
     }
 
