@@ -42,6 +42,7 @@ public class ShoppingCartController extends HttpServlet {
                 int totalItemNumInCart = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
                 float totalPrice = shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts);
 
+                context.setVariable("userId", userId);
                 context.setVariable("products", shoppingCartProducts);
                 context.setVariable("totalItemNum", totalItemNumInCart);
                 context.setVariable("totalPrice", totalPrice);
