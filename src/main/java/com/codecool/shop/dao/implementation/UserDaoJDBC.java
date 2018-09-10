@@ -5,6 +5,7 @@ import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserDaoJDBC implements UserDao {
 
@@ -23,7 +24,7 @@ public class UserDaoJDBC implements UserDao {
         List<User> users = new ArrayList<>();
 
         for (Map singleRow : resultRowsFromQuery) {
-            users.add(new User((Integer) singleRow.get("user_id"),
+            users.add(new User((Integer) singleRow.get("id"),
                     (String) singleRow.get("email_address"),
                     (String) singleRow.get("password"),
                     (String) singleRow.get("first_name"),
@@ -86,6 +87,25 @@ public class UserDaoJDBC implements UserDao {
         return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM users;",
             Collections.emptyList()));
+    }
+
+    private boolean isEmailValid(String email) {
+        return this.getAll()
+                .stream()
+                .filter(user -> user.getEmailAddress().equals(email))
+                .collect(Collectors.toList()).size() == 0;
+    }
+
+    @Override
+    public boolean validRegister(String email, String password, String passwordConfirm) {
+        return isEmailValid(email) && password.equals(passwordConfirm);
+    }
+
+    @Override
+    public boolean validLogin(String email, String password) {
+        User user = this.find(email);
+
+        return (user != null) && (user.getEmailAddress().equals(email) && user.getPassword().equals(password));
     }
 
 }

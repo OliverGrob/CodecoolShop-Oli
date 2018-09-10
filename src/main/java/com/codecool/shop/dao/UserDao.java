@@ -17,4 +17,7 @@ public interface UserDao {
 
     List<User> getAll();
 
+    boolean validRegister(String email, String password, String passwordConfirm);
+    boolean validLogin(String email, String password);
+
 }
