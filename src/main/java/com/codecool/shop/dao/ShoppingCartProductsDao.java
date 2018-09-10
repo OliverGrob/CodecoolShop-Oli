@@ -12,4 +12,7 @@ public interface ShoppingCartProductsDao {
 
     List<ShoppingCartProduct> getShoppingCartProductsByUser(int userId);
 
+    int calculateTotalItemNumber(List<ShoppingCartProduct> shoppingCartProducts);
+    float calculateTotalPrice(List<ShoppingCartProduct> shoppingCartProducts);
+
 }

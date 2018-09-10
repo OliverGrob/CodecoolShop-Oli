@@ -4,12 +4,10 @@ package com.codecool.shop.dao.implementation;
 import com.codecool.shop.dao.ProductDao;
 import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ProductCategory;
-import com.codecool.shop.model.ShoppingCartProduct;
 import com.codecool.shop.model.Supplier;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ProductDaoMem implements ProductDao {
@@ -62,15 +60,5 @@ public class ProductDaoMem implements ProductDao {
     @Override
     public List<Product> getByProductCategory(int productCategoryId) {
         return data.stream().filter(t -> t.getProductCategory().getId() == productCategoryId).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Product> getAllProductsForShoppingCart(List<ShoppingCartProduct> shoppingCartProducts) {
-        return null;
-    }
-
-    @Override
-    public Set<Product> getProductsForShoppingCart(List<ShoppingCartProduct> shoppingCartProducts) {
-        return null;
     }
 }
