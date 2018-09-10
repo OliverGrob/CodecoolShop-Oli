@@ -2,24 +2,24 @@ package com.codecool.shop.model;
 
 public class ShoppingCartProduct {
 
-    private int shoppingCartId;
-    private int productId;
+    private ShoppingCart shoppingCart;
+    private Product product;
     private int amount;
 
 
-    public ShoppingCartProduct(int shoppingCartId, int productId, int amount) {
-        this.shoppingCartId = shoppingCartId;
-        this.productId = productId;
+    public ShoppingCartProduct(ShoppingCart shoppingCart, Product product, int amount) {
+        this.shoppingCart = shoppingCart;
+        this.product = product;
         this.amount = amount;
     }
 
 
-    public int getShoppingCartId() {
-        return shoppingCartId;
+    public ShoppingCart getShoppingCart() {
+        return shoppingCart;
     }
 
-    public int getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 
     public int getAmount() {

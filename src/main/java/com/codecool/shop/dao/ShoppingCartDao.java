@@ -7,15 +7,14 @@ import java.util.List;
 
 public interface ShoppingCartDao {
 
-    void add(int userId, Date time, ShoppingCartStatus status);
+    void add(int userId, Date time);
 
     ShoppingCart find(int id);
-    ShoppingCart findActiveCart();
+    ShoppingCart findActiveCartForUser(int userId);
+    void changeCartStatus(int userId, ShoppingCartStatus statusFrom, ShoppingCartStatus statusTo);
 
     void remove(int id);
 
     List<ShoppingCart> getAll();
-
-    float calculateTotalPrice(List<Product> allProductsInCart);
 
 }

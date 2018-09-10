@@ -7,7 +7,7 @@ import java.util.List;
 public class ShoppingCart {
 
     private int id;
-    private int userId;
+    private User user;
     private Date time;
     private ShoppingCartStatus status;
 
@@ -15,9 +15,9 @@ public class ShoppingCart {
     private List<Product> productsInCart = new ArrayList<>();
 
 
-    public ShoppingCart(int id, int userId, Date time, ShoppingCartStatus status) {
+    public ShoppingCart(int id, User user, Date time, ShoppingCartStatus status) {
         this.id = id;
-        this.userId = userId;
+        this.user = user;
         this.time = time;
         this.status = status;
     }
@@ -31,12 +31,12 @@ public class ShoppingCart {
         this.id = id;
     }
 
-    public int getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Date getTime() {
@@ -74,12 +74,12 @@ public class ShoppingCart {
     @Override
     public String toString() {
         return String.format("id: %1$d, " +
-                        "userId: %2$s, " +
+                        "user: %2$s, " +
                         "time: %3$s, " +
                         "status: %4$s, " +
                         "totalPrice: %5$s, ",
                 this.id,
-                this.userId,
+                this.user,
                 this.time.toString(),
                 this.status,
                 this.totalPrice);
