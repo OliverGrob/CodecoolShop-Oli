@@ -27,4 +27,4 @@ TODO ------------------------------------------------------
  - remove DaoMem-s completely
  + every object-s foreign key in SQL should appear as an object reference in their fields
  - no more than 1 query in each controller method
- - user controller -> proper login/register
+ + user controller -> proper login/register
