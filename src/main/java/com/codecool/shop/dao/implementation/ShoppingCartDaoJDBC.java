@@ -98,7 +98,11 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
     @Override
     public List<ShoppingCart> getAll() {
         return this.objectCreator(controller.executeQueryWithReturnValue(
-        "SELECT * FROM shopping_cart;",
+        "SELECT shopping_cart.id, users.id AS user_id, users.email_address, users.password, users.first_name, " +
+                  "users.last_name, users.country, users.city, users.address, users.zip_code, users.is_shipping_same, " +
+                  "shopping_cart.time, shopping_cart.status " +
+                "FROM shopping_cart " +
+                  "JOIN users ON shopping_cart.user_id = users.id;",
             Collections.emptyList()));
     }
 
