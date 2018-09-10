@@ -148,4 +148,14 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
             Collections.singletonList(userId)));
     }
 
+    @Override
+    public int calculateTotalItemNumber(List<ShoppingCartProduct> shoppingCartProducts) {
+        return shoppingCartProducts.stream().mapToInt(ShoppingCartProduct::getAmount).sum();
+    }
+
+    @Override
+    public float calculateTotalPrice(List<ShoppingCartProduct> shoppingCartProducts) {
+        return (float) shoppingCartProducts.stream().mapToDouble(ShoppingCartProduct::getAmount).sum();
+    }
+
 }
