@@ -128,11 +128,11 @@
                 </div>
             </div>
 
-            <div th:classappend="${userId == null} ? 'd-none' : ''" class="cart" align="right">
+            <div th:classappend="${userId == null} ? 'd-none' : ''" class="cart logged-in" align="right">
                 <form action="/shopping-cart" method="get">
                     <button class="btn btn-info btn-lg" type="submit"><i class="fas fa-shopping-cart"></i></button>
                 </form>
-                <span id="item-count" class="d-none"></span>
+                <span id="item-count" class="d-none logged-in"></span>
             </div>
         </nav>
     </body>

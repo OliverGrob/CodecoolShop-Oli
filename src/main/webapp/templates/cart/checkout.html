@@ -17,15 +17,15 @@
                                         th:each="product : ${products}">
                                         <div>
                                             <h6 class="my-0"
-                                                th:text="${product.getName()} + ' x ' + ${shopping_cart_data.get(product.getId())}">
+                                                th:text="${product.getProduct().getName()} + ' x ' + ${product.getAmount()}">
                                                 Product name
                                             </h6>
                                             <small class="text-success"
-                                                   th:text="${product.getDescription()}">
+                                                   th:text="${product.getProduct().getDescription()}">
                                                 Brief description
                                             </small>
                                         </div> 
-                                        <span class="text-success" th:text="'$' + ${product.getPriceNumOnly()}">$12</span>
+                                        <span class="text-success" th:text="'$' + ${product.getProduct().getDefaultPrice()}">$12</span>
                                     </li>
                                 </ul>
                             </div>

@@ -14,23 +14,23 @@
                     </tr>
                 </thead>
                 <tbody th:each="product : ${products}">
-                    <tr th:id="'table_row_' + ${product.getId()}">
+                    <tr th:id="'table_row_' + ${product.getProduct().getId()}">
                         <th scope="row">
                             <img class="cart_image group list-group-image" src="http://placehold.it/400x250/000/fff"
-                                 th:attr="src='/static/img/jar' + ${product.getId()} + '.png'" alt="" />
+                                 th:attr="src='/static/img/jar' + ${product.getProduct().getId()} + '.png'" alt="" />
                         </th>
-                        <td th:text="${product.getName()}">Item</td>
+                        <td th:text="${product.getProduct().getName()}">Item</td>
                         <td>
-                            <div th:text="'Category: ' + ${product.getProductCategoryName()}">ProductCategory</div>
-                            <div th:text="'Supplier: ' + ${product.getSupplierName()}">Supplier</div>
+                            <div th:text="'Category: ' + ${product.getProduct().getProductCategoryName()}">ProductCategory</div>
+                            <div th:text="'Supplier: ' + ${product.getProduct().getSupplierName()}">Supplier</div>
                         </td>
-                        <td th:text="${product.getPrice()}">Price</td>
+                        <td th:text="${product.getProduct().getPrice()}">Price</td>
                         <td class="d-inline-block">
                             <div>
-                                <i class="fas fa-minus border rounded p-2" th:id="${product.getId()}"></i>
-                                <span class="ml-3 mr-3" th:id="'quantity_' + ${product.getId()}"
-                                      th:text="${shopping_cart_data.get(product.getId())}"></span>
-                                <i class="fas fa-plus border rounded p-2" th:id="${product.getId()}"></i>
+                                <i class="fas fa-minus border rounded p-2" th:id="${product.getProduct().getId()}"></i>
+                                <span class="ml-3 mr-3" th:id="'quantity_' + ${product.getProduct().getId()}"
+                                      th:text="${product.getAmount()}"></span>
+                                <i class="fas fa-plus border rounded p-2" th:id="${product.getProduct().getId()}"></i>
                             </div>
                         </td>
                     </tr>
