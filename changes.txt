@@ -18,3 +18,11 @@
 - ----- Do we want Footers?? -----
 
 TODO ------------------------------------------------------
+
+ + 2 executeQuery function in JDBCController
+ + rewrite all DaoJDBC-s with new query methods
+ - session manager class
+ - sort out every "multiple queries" (where more unnecessary query happens)
+ - remove unused methods from interfaces and DaoMem-s
+ - remove DaoMem-s completely
+ + every object-s foreign key in SQL should appear as an object reference in their fields
