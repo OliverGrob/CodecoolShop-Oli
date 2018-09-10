@@ -32,11 +32,11 @@ public class ProductDaoJDBC implements ProductDao {
                     (String) singleRow.get("description"),
                     new ProductCategory((Integer) singleRow.get("prod_cat_id"),
                             (String) singleRow.get("prod_cat_name"),
-                            (String) singleRow.get("prod_cat_desc"),
-                            (String) singleRow.get("prod_cat_dep")),
-                    new Supplier((Integer) singleRow.get("prod_cat_id"),
-                            (String) singleRow.get("prod_cat_name"),
-                            (String) singleRow.get("prod_cat_dep"))));
+                            (String) singleRow.get("prod_cat_dep"),
+                            (String) singleRow.get("prod_cat_desc")),
+                    new Supplier((Integer) singleRow.get("supp_id"),
+                            (String) singleRow.get("supp_name"),
+                            (String) singleRow.get("supp_desc"))));
         }
 
         return products;

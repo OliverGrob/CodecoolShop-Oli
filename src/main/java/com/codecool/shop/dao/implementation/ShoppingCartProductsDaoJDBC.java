@@ -24,7 +24,7 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
         List<ShoppingCartProduct> shoppingCartProducts = new ArrayList<>();
 
         for (Map singleRow : resultRowsFromQuery) {
-            shoppingCartProducts.add(new ShoppingCartProduct(new ShoppingCart((Integer) singleRow.get("id"),
+            shoppingCartProducts.add(new ShoppingCartProduct(new ShoppingCart((Integer) singleRow.get("shop_cart_id"),
                     new User((Integer) singleRow.get("user_id"),
                             (String) singleRow.get("email_address"),
                             (String) singleRow.get("password"),
@@ -39,16 +39,16 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
                     ShoppingCartStatus.valueOf((String) singleRow.get("status"))),
                     new Product((Integer) singleRow.get("id"),
                             (String) singleRow.get("name"),
-                            (Float) singleRow.get("default_price"),
+                            (float) ((double) singleRow.get("default_price")),
                             (String) singleRow.get("currency_string"),
                             (String) singleRow.get("description"),
                             new ProductCategory((Integer) singleRow.get("prod_cat_id"),
                                     (String) singleRow.get("prod_cat_name"),
                                     (String) singleRow.get("prod_cat_desc"),
                                     (String) singleRow.get("prod_cat_dep")),
-                            new Supplier((Integer) singleRow.get("prod_cat_id"),
-                                    (String) singleRow.get("prod_cat_name"),
-                                    (String) singleRow.get("prod_cat_dep"))),
+                            new Supplier((Integer) singleRow.get("supp_id"),
+                                    (String) singleRow.get("supp_name"),
+                                    (String) singleRow.get("supp_desc"))),
                     (Integer) singleRow.get("amount")));
         }
 
@@ -73,7 +73,7 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
                   "JOIN product ON shopping_cart_products.product_id = product.id " +
                   "JOIN product_category ON product.product_category_id = product_category.id " +
                   "JOIN supplier ON product.supplier_id = supplier.id " +
-                  "JOIN shopping_cart ON product.id = shopping_cart.id " +
+                  "JOIN shopping_cart ON shopping_cart_products.shopping_cart_id = shopping_cart.id " +
                   "JOIN users ON shopping_cart.user_id = users.id " +
                 "WHERE shopping_cart.id = ? AND product.id = ?;",
             Arrays.asList(shoppingCartId, productId)));
@@ -141,7 +141,7 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
                   "JOIN product ON shopping_cart_products.product_id = product.id " +
                   "JOIN product_category ON product.product_category_id = product_category.id " +
                   "JOIN supplier ON product.supplier_id = supplier.id " +
-                  "JOIN shopping_cart ON product.id = shopping_cart.id " +
+                  "JOIN shopping_cart ON shopping_cart_products.shopping_cart_id = shopping_cart.id " +
                   "JOIN users ON shopping_cart.user_id = users.id " +
                 "WHERE users.id = ? AND shopping_cart.status LIKE 'IN_CART' " +
                 "ORDER BY product.id;",
@@ -155,7 +155,7 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
     @Override
     public float calculateTotalPrice(List<ShoppingCartProduct> shoppingCartProducts) {
-        return (float) shoppingCartProducts.stream().mapToDouble(ShoppingCartProduct::getAmount).sum();
+        return (float) shoppingCartProducts.stream().mapToDouble(product -> product.getProduct().getDefaultPrice()).sum();
     }
 
 }
