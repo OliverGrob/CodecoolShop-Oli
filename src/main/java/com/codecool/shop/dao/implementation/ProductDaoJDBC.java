@@ -4,10 +4,8 @@ import com.codecool.shop.dao.ProductDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ProductCategory;
-import com.codecool.shop.model.ShoppingCartProduct;
 import com.codecool.shop.model.Supplier;
 
-import java.sql.*;
 import java.util.*;
 
 public class ProductDaoJDBC implements ProductDao {
@@ -23,40 +21,25 @@ public class ProductDaoJDBC implements ProductDao {
         return instance;
     }
 
-    private List<Product> executeQueryWithReturnValue(String query, List<Object> parameters) {
-        Connection connection = controller.getConnection();
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        List<Product> resultList = new ArrayList<>();
+    private List<Product> objectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        List<Product> products = new ArrayList<>();
 
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            for (int i = 0; i < parameters.size(); i++) {
-                preparedStatement.setObject(i + 1, parameters.get(i));
-            }
-            resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                Product data = new Product(resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getFloat("default_price"),
-                        resultSet.getString("currency_string"),
-                        resultSet.getString("description"),
-                        ProductCategoryDaoJDBC.getInstance().find(resultSet.getInt("product_category_id")),
-                        SupplierDaoJDBC.getInstance().find(resultSet.getInt("supplier_id")));
-                resultList.add(data);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        for (Map singleRow : resultRowsFromQuery) {
+            products.add(new Product((Integer) singleRow.get("id"),
+                    (String) singleRow.get("name"),
+                    (Float) singleRow.get("default_price"),
+                    (String) singleRow.get("currency_string"),
+                    (String) singleRow.get("description"),
+                    new ProductCategory((Integer) singleRow.get("prod_cat_id"),
+                            (String) singleRow.get("prod_cat_name"),
+                            (String) singleRow.get("prod_cat_desc"),
+                            (String) singleRow.get("prod_cat_dep")),
+                    new Supplier((Integer) singleRow.get("prod_cat_id"),
+                            (String) singleRow.get("prod_cat_name"),
+                            (String) singleRow.get("prod_cat_dep"))));
         }
 
-        return resultList;
+        return products;
     }
 
     @Override
@@ -70,20 +53,42 @@ public class ProductDaoJDBC implements ProductDao {
 
     @Override
     public Product find(int id) {
-        List<Product> products = executeQueryWithReturnValue(
-        "SELECT * FROM product WHERE id = ?;",
+        List<Map<String, Object>> products = controller.executeQueryWithReturnValue(
+        "SELECT product.id, product.name, product.default_price, product.currency_string, product.description, " +
+                  "product_category.id AS prod_cat_id, " +
+                  "product_category.name AS prod_cat_name, " +
+                  "product_category.description AS prod_cat_desc, " +
+                  "product_category.department AS prod_cat_dep, " +
+                  "supplier.id AS supp_id, " +
+                  "supplier.name AS supp_name, " +
+                  "supplier.description AS supp_desc " +
+                "FROM product " +
+                  "JOIN product_category ON product.product_category_id = product_category.id " +
+                  "JOIN supplier ON product.supplier_id = supplier.id " +
+                "WHERE product.id = ?;",
             Collections.singletonList(id));
 
-        return (products.size() != 0) ? products.get(0) : null;
+        return (products.size() != 0) ? this.objectCreator(products).get(0) : null;
     }
 
     @Override
     public Product find(String name) {
-        List<Product> products = executeQueryWithReturnValue(
-        "SELECT * FROM product WHERE name LIKE ?;",
+        List<Map<String, Object>> products = controller.executeQueryWithReturnValue(
+        "SELECT product.id, product.name, product.default_price, product.currency_string, product.description, " +
+                  "product_category.id AS prod_cat_id, " +
+                  "product_category.name AS prod_cat_name, " +
+                  "product_category.description AS prod_cat_desc, " +
+                  "product_category.department AS prod_cat_dep, " +
+                  "supplier.id AS supp_id, " +
+                  "supplier.name AS supp_name, " +
+                  "supplier.description AS supp_desc " +
+                "FROM product " +
+                  "JOIN product_category ON product.product_category_id = product_category.id " +
+                  "JOIN supplier ON product.supplier_id = supplier.id " +
+                "WHERE product.name LIKE ?;",
             Collections.singletonList(name));
 
-        return (products.size() != 0) ? products.get(0) : null;
+        return (products.size() != 0) ? this.objectCreator(products).get(0) : null;
     }
 
     @Override
@@ -95,59 +100,23 @@ public class ProductDaoJDBC implements ProductDao {
 
     @Override
     public List<Product> getAll() {
-        return executeQueryWithReturnValue(
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM product;",
-            Collections.emptyList());
+            Collections.emptyList()));
     }
 
     @Override
     public List<Product> getBySupplier(int supplierId) {
-        return executeQueryWithReturnValue(
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM product WHERE supplier_id = ?;",
-            Collections.singletonList(supplierId));
+            Collections.singletonList(supplierId)));
     }
 
     @Override
     public List<Product> getByProductCategory(int productCategoryId) {
-        return executeQueryWithReturnValue(
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM product WHERE product_category_id = ?;",
-            Collections.singletonList(productCategoryId));
-    }
-
-    @Override
-    public List<Product> getAllProductsForShoppingCart(List<ShoppingCartProduct> shoppingCartProducts) {
-        List<Product> productsInCart = new ArrayList<>();
-
-        for (ShoppingCartProduct shoppingCartProduct : shoppingCartProducts) {
-            Product product = executeQueryWithReturnValue(
-            "SELECT * FROM product WHERE id = ?;",
-                Collections.singletonList(shoppingCartProduct.getProductId())
-            ).get(0);
-
-            for (int i = 0; i < shoppingCartProduct.getAmount(); i++) {
-                productsInCart.add(product);
-            }
-        }
-
-        return productsInCart;
-    }
-
-    @Override
-    public Set<Product> getProductsForShoppingCart(List<ShoppingCartProduct> shoppingCartProducts) {
-        Set<Product> productsInCart = new LinkedHashSet<>();
-
-        for (ShoppingCartProduct shoppingCartProduct : shoppingCartProducts) {
-            Product product = executeQueryWithReturnValue(
-            "SELECT * FROM product WHERE id = ?;",
-                Collections.singletonList(shoppingCartProduct.getProductId())
-            ).get(0);
-
-            for (int i = 0; i < shoppingCartProduct.getAmount(); i++) {
-                productsInCart.add(product);
-            }
-        }
-
-        return productsInCart;
+            Collections.singletonList(productCategoryId)));
     }
 
 }

@@ -19,16 +19,7 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
         return instance;
     }
 
-    private ProductCategory singleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
-        Map<String, Object> singleRow = resultRowsFromQuery.get(0);
-
-        return new ProductCategory((Integer) singleRow.get("id"),
-                (String) singleRow.get("name"),
-                (String) singleRow.get("description"),
-                (String) singleRow.get("department"));
-    }
-
-    private List<ProductCategory> multipleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+    private List<ProductCategory> objectCreator(List<Map<String,Object>> resultRowsFromQuery) {
         List<ProductCategory> productCategories = new ArrayList<>();
 
         for (Map singleRow : resultRowsFromQuery) {
@@ -55,7 +46,7 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
         "SELECT * FROM product_category WHERE id = ?;",
             Collections.singletonList(id));
 
-        return (productCategories.size() != 0) ? this.singleObjectCreator(productCategories) : null;
+        return (productCategories.size() != 0) ? this.objectCreator(productCategories).get(0) : null;
     }
 
     @Override
@@ -64,7 +55,7 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
         "SELECT * FROM product_category WHERE name LIKE ?;",
             Collections.singletonList(name));
 
-        return (productCategories.size() != 0) ? this.singleObjectCreator(productCategories) : null;
+        return (productCategories.size() != 0) ? this.objectCreator(productCategories).get(0) : null;
     }
 
     @Override
@@ -76,7 +67,7 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
 
     @Override
     public List<ProductCategory> getAll() {
-        return this.multipleObjectCreator(controller.executeQueryWithReturnValue(
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM product_category;",
             Collections.emptyList()));
     }

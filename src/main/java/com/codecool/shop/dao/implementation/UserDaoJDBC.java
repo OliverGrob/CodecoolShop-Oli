@@ -4,11 +4,7 @@ import com.codecool.shop.dao.UserDao;
 import com.codecool.shop.jdbc.JDBCController;
 import com.codecool.shop.model.User;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class UserDaoJDBC implements UserDao {
 
@@ -23,43 +19,23 @@ public class UserDaoJDBC implements UserDao {
         return instance;
     }
 
-    private List<User> executeQueryWithReturnValue(String query, List<Object> parameters) {
-        Connection connection = controller.getConnection();
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        List<User> resultList = new ArrayList<>();
+    private List<User> objectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        List<User> users = new ArrayList<>();
 
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            for (int i = 0; i < parameters.size(); i++) {
-                preparedStatement.setObject(i + 1, parameters.get(i));
-            }
-            resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                User data = new User(resultSet.getInt("id"),
-                        resultSet.getString("email_address"),
-                        resultSet.getString("password"),
-                        resultSet.getString("first_name"),
-                        resultSet.getString("last_name"),
-                        resultSet.getString("country"),
-                        resultSet.getString("city"),
-                        resultSet.getString("address"),
-                        resultSet.getString("zip_code"),
-                        resultSet.getBoolean("is_shipping_same"));
-                resultList.add(data);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        for (Map singleRow : resultRowsFromQuery) {
+            users.add(new User((Integer) singleRow.get("user_id"),
+                    (String) singleRow.get("email_address"),
+                    (String) singleRow.get("password"),
+                    (String) singleRow.get("first_name"),
+                    (String) singleRow.get("last_name"),
+                    (String) singleRow.get("country"),
+                    (String) singleRow.get("city"),
+                    (String) singleRow.get("address"),
+                    (String) singleRow.get("zip_code"),
+                    (Boolean) singleRow.get("is_shipping_same")));
         }
 
-        return resultList;
+        return users;
     }
 
     @Override
@@ -82,20 +58,20 @@ public class UserDaoJDBC implements UserDao {
 
     @Override
     public User find(int id) {
-        List<User> users = executeQueryWithReturnValue(
+        List<Map<String, Object>> users = controller.executeQueryWithReturnValue(
         "SELECT * FROM users WHERE id = ?;",
             Collections.singletonList(id));
 
-        return (users.size() != 0) ? users.get(0) : null;
+        return (users.size() != 0) ? this.objectCreator(users).get(0) : null;
     }
 
     @Override
     public User find(String email) {
-        List<User> users = executeQueryWithReturnValue(
+        List<Map<String, Object>> users = controller.executeQueryWithReturnValue(
         "SELECT * FROM users WHERE email_address LIKE ?;",
             Collections.singletonList(email));
 
-        return (users.size() != 0) ? users.get(0) : null;
+        return (users.size() != 0) ? this.objectCreator(users).get(0) : null;
     }
 
     @Override
@@ -107,9 +83,9 @@ public class UserDaoJDBC implements UserDao {
 
     @Override
     public List<User> getAll() {
-        return executeQueryWithReturnValue(
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM users;",
-            Collections.emptyList());
+            Collections.emptyList()));
     }
 
 }

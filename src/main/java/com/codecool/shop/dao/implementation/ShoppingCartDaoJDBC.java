@@ -2,11 +2,10 @@ package com.codecool.shop.dao.implementation;
 
 import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.jdbc.JDBCController;
-import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCart;
 import com.codecool.shop.model.ShoppingCartStatus;
+import com.codecool.shop.model.User;
 
-import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
@@ -23,88 +22,84 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
         return instance;
     }
 
-    private List<ShoppingCart> executeQueryWithReturnValue(String query, List<Object> parameters) {
-        Connection connection = controller.getConnection();
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        List<ShoppingCart> resultList = new ArrayList<>();
+    private List<ShoppingCart> objectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        List<ShoppingCart> shoppingCarts = new ArrayList<>();
 
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            for (int i = 0; i < parameters.size(); i++) {
-                preparedStatement.setObject(i + 1, parameters.get(i));
-            }
-            resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                ShoppingCart data = new ShoppingCart(resultSet.getInt("id"),
-                        resultSet.getInt("user_id"),
-                        resultSet.getDate("time"),
-                        ShoppingCartStatus.valueOf(resultSet.getString("status")));
-                resultList.add(data);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        for (Map singleRow : resultRowsFromQuery) {
+            shoppingCarts.add(new ShoppingCart((Integer) singleRow.get("id"),
+                    new User((Integer) singleRow.get("user_id"),
+                            (String) singleRow.get("email_address"),
+                            (String) singleRow.get("password"),
+                            (String) singleRow.get("first_name"),
+                            (String) singleRow.get("last_name"),
+                            (String) singleRow.get("country"),
+                            (String) singleRow.get("city"),
+                            (String) singleRow.get("address"),
+                            (String) singleRow.get("zip_code"),
+                            (Boolean) singleRow.get("is_shipping_same")),
+                    (Date) singleRow.get("time"),
+                    ShoppingCartStatus.valueOf((String) singleRow.get("status"))));
         }
 
-        return resultList;
+        return shoppingCarts;
     }
 
     @Override
-    public void add(int userId, Date time, ShoppingCartStatus status) {
+    public void add(int userId, Date time) {
         controller.executeQuery(
         "INSERT INTO shopping_cart (id, user_id, time, status) " +
                 "VALUES (DEFAULT, ?, ?, ?);",
-            Arrays.asList(userId, time, status.toString()));
+            Arrays.asList(userId, time, ShoppingCartStatus.IN_CART.toString()));
     }
 
     @Override
-    public ShoppingCart find(int id) {
-        List<ShoppingCart> shoppingCarts = executeQueryWithReturnValue(
-        "SELECT * FROM shopping_cart WHERE id = ?;",
-            Collections.singletonList(id));
+    public ShoppingCart find(int shoppingCartId) {
+        List<Map<String, Object>> shoppingCarts = controller.executeQueryWithReturnValue(
+        "SELECT shopping_cart.id, users.id AS user_id, users.email_address, users.password, users.first_name, " +
+                  "users.last_name, users.country, users.city, users.address, users.zip_code, users.is_shipping_same, " +
+                  "shopping_cart.time, shopping_cart.status " +
+                "FROM shopping_cart " +
+                  "JOIN users ON shopping_cart.user_id = users.id " +
+                "WHERE shopping_cart.id = ?;",
+            Collections.singletonList(shoppingCartId));
 
-        return (shoppingCarts.size() != 0) ? shoppingCarts.get(0) : null;
+        return (shoppingCarts.size() != 0) ? this.objectCreator(shoppingCarts).get(0) : null;
     }
 
     @Override
-    public ShoppingCart findActiveCart() {
-        List<ShoppingCart> shoppingCarts = executeQueryWithReturnValue(
-        "SELECT * FROM shopping_cart WHERE status LIKE ?;",
-            Collections.singletonList("IN_CART"));
+    public ShoppingCart findActiveCartForUser(int userId) {
+        List<Map<String, Object>> shoppingCarts = controller.executeQueryWithReturnValue(
+        "SELECT shopping_cart.id, users.id AS user_id, users.email_address, users.password, users.first_name, " +
+                  "users.last_name, users.country, users.city, users.address, users.zip_code, users.is_shipping_same, " +
+                  "shopping_cart.time, shopping_cart.status " +
+                "FROM shopping_cart " +
+                  "JOIN users ON shopping_cart.user_id = users.id " +
+                "WHERE shopping_cart.user_id = ? AND shopping_cart.status LIKE 'IN_CART';",
+            Collections.singletonList(userId));
 
-        return (shoppingCarts.size() != 0) ? shoppingCarts.get(0) : null;
+        return (shoppingCarts.size() != 0) ? this.objectCreator(shoppingCarts).get(0) : null;
     }
 
     @Override
-    public void remove(int id) {
+    public void changeCartStatus(int userId, ShoppingCartStatus statusFrom, ShoppingCartStatus statusTo) {
+        controller.executeQuery(
+        "UPDATE shopping_cart SET status = ? " +
+                "WHERE user_id = ? AND status = ?;",
+            Arrays.asList(statusTo.toString(), userId, statusFrom.toString()));
+    }
+
+    @Override
+    public void remove(int shoppingCartId) {
         controller.executeQuery(
         "DELETE FROM shopping_cart WHERE id = ?;",
-            Collections.singletonList(id));
+            Collections.singletonList(shoppingCartId));
     }
 
     @Override
     public List<ShoppingCart> getAll() {
-        return executeQueryWithReturnValue(
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM shopping_cart;",
-            Collections.emptyList());
-    }
-
-    @Override
-    public float calculateTotalPrice(List<Product> allProductsInCart) {
-        float totalPrice = 0;
-
-        for (Product product : allProductsInCart) {
-            totalPrice += product.getDefaultPrice();
-        }
-
-        return totalPrice;
+            Collections.emptyList()));
     }
 
 }

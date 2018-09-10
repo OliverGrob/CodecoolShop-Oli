@@ -19,24 +19,16 @@ public class SupplierDaoJDBC implements SupplierDao {
         return instance;
     }
 
-    private Supplier singleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
-        Map<String, Object> singleRow = resultRowsFromQuery.get(0);
-
-        return new Supplier((Integer) singleRow.get("id"),
-                (String) singleRow.get("name"),
-                (String) singleRow.get("description"));
-    }
-
-    private List<Supplier> multipleObjectCreator(List<Map<String,Object>> resultRowsFromQuery) {
-        List<Supplier> productCategories = new ArrayList<>();
+    private List<Supplier> objectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        List<Supplier> suppliers = new ArrayList<>();
 
         for (Map singleRow : resultRowsFromQuery) {
-            productCategories.add(new Supplier((Integer) singleRow.get("id"),
+            suppliers.add(new Supplier((Integer) singleRow.get("id"),
                     (String) singleRow.get("name"),
                     (String) singleRow.get("description")));
         }
 
-        return productCategories;
+        return suppliers;
     }
 
     @Override
@@ -53,7 +45,7 @@ public class SupplierDaoJDBC implements SupplierDao {
         "SELECT * FROM supplier WHERE id = ?;",
             Collections.singletonList(id));
 
-        return (suppliers.size() != 0) ? this.singleObjectCreator(suppliers) : null;
+        return (suppliers.size() != 0) ? this.objectCreator(suppliers).get(0) : null;
     }
 
     @Override
@@ -62,7 +54,7 @@ public class SupplierDaoJDBC implements SupplierDao {
         "SELECT * FROM supplier WHERE name LIKE ?;",
             Collections.singletonList(name));
 
-        return (suppliers.size() != 0) ? this.singleObjectCreator(suppliers) : null;
+        return (suppliers.size() != 0) ? this.objectCreator(suppliers).get(0) : null;
     }
 
     @Override
@@ -74,7 +66,7 @@ public class SupplierDaoJDBC implements SupplierDao {
 
     @Override
     public List<Supplier> getAll() {
-        return this.multipleObjectCreator(controller.executeQueryWithReturnValue(
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT * FROM supplier;",
             Collections.emptyList()));
     }

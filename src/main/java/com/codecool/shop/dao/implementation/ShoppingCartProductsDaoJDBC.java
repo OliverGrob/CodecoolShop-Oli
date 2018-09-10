@@ -2,11 +2,10 @@ package com.codecool.shop.dao.implementation;
 
 import com.codecool.shop.dao.ShoppingCartProductsDao;
 import com.codecool.shop.jdbc.JDBCController;
-import com.codecool.shop.model.Product;
-import com.codecool.shop.model.ShoppingCartProduct;
+import com.codecool.shop.model.*;
 
-import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
@@ -21,117 +20,132 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
         return instance;
     }
 
-    private List<ShoppingCartProduct> executeQueryWithReturnValue(String query, List<Object> parameters) {
-        Connection connection = controller.getConnection();
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        List<ShoppingCartProduct> resultList = new ArrayList<>();
+    private List<ShoppingCartProduct> objectCreator(List<Map<String,Object>> resultRowsFromQuery) {
+        List<ShoppingCartProduct> shoppingCartProducts = new ArrayList<>();
 
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            for (int i = 0; i < parameters.size(); i++) {
-                preparedStatement.setObject(i + 1, parameters.get(i));
-            }
-            resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                ShoppingCartProduct data = new ShoppingCartProduct(resultSet.getInt("shopping_cart_id"),
-                        resultSet.getInt("product_id"),
-                        resultSet.getInt("amount"));
-                resultList.add(data);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        } finally {
-            try { if (resultSet != null) resultSet.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (preparedStatement != null) preparedStatement.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { if (connection != null) connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        for (Map singleRow : resultRowsFromQuery) {
+            shoppingCartProducts.add(new ShoppingCartProduct(new ShoppingCart((Integer) singleRow.get("id"),
+                    new User((Integer) singleRow.get("user_id"),
+                            (String) singleRow.get("email_address"),
+                            (String) singleRow.get("password"),
+                            (String) singleRow.get("first_name"),
+                            (String) singleRow.get("last_name"),
+                            (String) singleRow.get("country"),
+                            (String) singleRow.get("city"),
+                            (String) singleRow.get("address"),
+                            (String) singleRow.get("zip_code"),
+                            (Boolean) singleRow.get("is_shipping_same")),
+                    (Date) singleRow.get("time"),
+                    ShoppingCartStatus.valueOf((String) singleRow.get("status"))),
+                    new Product((Integer) singleRow.get("id"),
+                            (String) singleRow.get("name"),
+                            (Float) singleRow.get("default_price"),
+                            (String) singleRow.get("currency_string"),
+                            (String) singleRow.get("description"),
+                            new ProductCategory((Integer) singleRow.get("prod_cat_id"),
+                                    (String) singleRow.get("prod_cat_name"),
+                                    (String) singleRow.get("prod_cat_desc"),
+                                    (String) singleRow.get("prod_cat_dep")),
+                            new Supplier((Integer) singleRow.get("prod_cat_id"),
+                                    (String) singleRow.get("prod_cat_name"),
+                                    (String) singleRow.get("prod_cat_dep"))),
+                    (Integer) singleRow.get("amount")));
         }
 
-        return resultList;
+        return shoppingCartProducts;
     }
 
     private List<ShoppingCartProduct> findProduct(int shoppingCartId, int productId) {
-        return executeQueryWithReturnValue(
-        "SELECT * FROM shopping_cart_products " +
-                "WHERE shopping_cart_id = ? AND product_id = ?;",
-            Arrays.asList(shoppingCartId, productId));
+        return this.objectCreator(controller.executeQueryWithReturnValue(
+        "SELECT product.id, product.name, product.default_price, product.currency_string, product.description, " +
+                  "product_category.id AS prod_cat_id, " +
+                  "product_category.name AS prod_cat_name, " +
+                  "product_category.description AS prod_cat_desc, " +
+                  "product_category.department AS prod_cat_dep, " +
+                  "supplier.id AS supp_id, " +
+                  "supplier.name AS supp_name, " +
+                  "supplier.description AS supp_desc, " +
+                  "shopping_cart.id AS shop_cart_id, users.id AS user_id, users.email_address, users.password, users.first_name, " +
+                  "users.last_name, users.country, users.city, users.address, users.zip_code, users.is_shipping_same, " +
+                  "shopping_cart.time, shopping_cart.status, " +
+                  "shopping_cart_products.amount " +
+                "FROM shopping_cart_products " +
+                  "JOIN product ON shopping_cart_products.product_id = product.id " +
+                  "JOIN product_category ON product.product_category_id = product_category.id " +
+                  "JOIN supplier ON product.supplier_id = supplier.id " +
+                  "JOIN shopping_cart ON product.id = shopping_cart.id " +
+                  "JOIN users ON shopping_cart.user_id = users.id " +
+                "WHERE shopping_cart.id = ? AND product.id = ?;",
+            Arrays.asList(shoppingCartId, productId)));
     }
 
     @Override
-    public void addProductToShoppingCart(int shoppingCartId, int productId) {
-        List<ShoppingCartProduct> shoppingCartProduct = this.findProduct(shoppingCartId, productId);
+    public int addProductToShoppingCart(int shoppingCartId, int productId) {
+        List<ShoppingCartProduct> products = findProduct(shoppingCartId, productId);
+        int newAmount;
 
-        if (shoppingCartProduct.size() == 0) {
-            controller.executeQuery(
+        if (products.size() == 0) {
+            newAmount = (Integer) controller.executeQueryWithReturnValue(
             "INSERT INTO shopping_cart_products (shopping_cart_id, product_id, amount) " +
-                    "VALUES (?, ?, 1);",
-                Arrays.asList(shoppingCartId, productId));
+                    "VALUES (?, ?, 1) " +
+                    "RETURNING amount;",
+                Arrays.asList(shoppingCartId, productId)).get(0).get("amount");
         } else {
-            controller.executeQuery(
+            newAmount = (Integer) controller.executeQueryWithReturnValue(
             "UPDATE shopping_cart_products SET amount = (? + 1) " +
-                    "WHERE shopping_cart_id = ? AND product_id = ?;",
-                Arrays.asList(shoppingCartProduct.get(0).getAmount(), shoppingCartId, productId));
+                    "WHERE shopping_cart_id = ? AND product_id = ? " +
+                    "RETURNING amount;",
+                Arrays.asList(products.get(0).getAmount(), shoppingCartId, productId)).get(0).get("amount");
         }
+
+        return newAmount;
     }
 
     @Override
-    public void removeProductFromShoppingCart(int shoppingCartId, int productId) {
-        int productAmount = this.findProduct(shoppingCartId, productId).get(0).getAmount();
+    public int removeProductFromShoppingCart(int shoppingCartId, int productId) {
+        int productAmount = findProduct(shoppingCartId, productId).get(0).getAmount();
+        int newAmount;
 
         if (productAmount == 1) {
-            controller.executeQuery(
+            newAmount = (Integer) controller.executeQueryWithReturnValue(
             "DELETE FROM shopping_cart_products " +
-                    "WHERE shopping_cart_id = ? AND product_id = ?;",
-                Arrays.asList(shoppingCartId, productId));
+                    "WHERE shopping_cart_id = ? AND product_id = ? " +
+                    "RETURNING 0 AS amount;",
+                Arrays.asList(shoppingCartId, productId)).get(0).get("amount");
         } else {
-            controller.executeQuery(
+            newAmount = (Integer) controller.executeQueryWithReturnValue(
             "UPDATE shopping_cart_products SET amount = (? - 1) " +
-                    "WHERE shopping_cart_id = ? AND product_id = ?;",
-                Arrays.asList(productAmount, shoppingCartId, productId));
+                    "WHERE shopping_cart_id = ? AND product_id = ? " +
+                    "RETURNING amount;",
+                Arrays.asList(productAmount, shoppingCartId, productId)).get(0).get("amount");
         }
+        return newAmount;
     }
 
     @Override
-    public List<ShoppingCartProduct> getShoppingCartProductsByShoppingCartId(int shoppingCartId) {
-        return executeQueryWithReturnValue(
-        "SELECT * FROM shopping_cart_products " +
-                 "WHERE shopping_cart_id = ? ORDER BY product_id;",
-            Collections.singletonList(shoppingCartId));
-    }
-
-    @Override
-    public List<ShoppingCartProduct> getAll() {
-        return executeQueryWithReturnValue(
-        "SELECT * FROM shopping_cart_products;",
-            Collections.emptyList());
-    }
-
-    @Override
-    public Integer getProductQuantityByProductIdInActiveCart(int shoppingCartId, int productId) {
-        List<ShoppingCartProduct> products =  executeQueryWithReturnValue(
-        "SELECT * FROM shopping_cart_products " +
-                "WHERE shopping_cart_id = ? AND product_id = ?;",
-            Arrays.asList(shoppingCartId, productId));
-
-        return (products.size() != 0) ? products.get(0).getAmount() : 0;
-    }
-
-    @Override
-    public Map<Integer, Integer> getAllProductQuantity(int shoppingCartId, Set<Product> products) {
-        Map<Integer, Integer> productsInCart = new HashMap<>();
-
-        for (Product product : products) {
-            productsInCart.put(product.getId(), executeQueryWithReturnValue(
-            "SELECT * FROM shopping_cart_products " +
-                    "WHERE shopping_cart_id = ? AND product_id = ?;",
-                Arrays.asList(shoppingCartId, product.getId())
-            ).get(0).getAmount());
-        }
-
-        return productsInCart;
+    public List<ShoppingCartProduct> getShoppingCartProductsByUser(int userId) {
+        return this.objectCreator(controller.executeQueryWithReturnValue(
+        "SELECT product.id, product.name, product.default_price, product.currency_string, product.description, " +
+                  "product_category.id AS prod_cat_id, " +
+                  "product_category.name AS prod_cat_name, " +
+                  "product_category.description AS prod_cat_desc, " +
+                  "product_category.department AS prod_cat_dep, " +
+                  "supplier.id AS supp_id, " +
+                  "supplier.name AS supp_name, " +
+                  "supplier.description AS supp_desc, " +
+                  "shopping_cart.id AS shop_cart_id, users.id AS user_id, users.email_address, users.password, users.first_name, " +
+                  "users.last_name, users.country, users.city, users.address, users.zip_code, users.is_shipping_same, " +
+                  "shopping_cart.time, shopping_cart.status, " +
+                  "shopping_cart_products.amount " +
+                "FROM shopping_cart_products " +
+                  "JOIN product ON shopping_cart_products.product_id = product.id " +
+                  "JOIN product_category ON product.product_category_id = product_category.id " +
+                  "JOIN supplier ON product.supplier_id = supplier.id " +
+                  "JOIN shopping_cart ON product.id = shopping_cart.id " +
+                  "JOIN users ON shopping_cart.user_id = users.id " +
+                "WHERE users.id = ? AND shopping_cart.status LIKE 'IN_CART' " +
+                "ORDER BY product.id;",
+            Collections.singletonList(userId)));
     }
 
 }
