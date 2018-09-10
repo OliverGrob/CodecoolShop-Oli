@@ -3,7 +3,6 @@ package com.codecool.shop.controller;
 import com.codecool.shop.dao.*;
 import com.codecool.shop.dao.implementation.*;
 import com.codecool.shop.config.TemplateEngineUtil;
-import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCartProduct;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -15,14 +14,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 @WebServlet(urlPatterns = {"/shopping-cart"})
 public class ShoppingCartController extends HttpServlet {
-    private ProductDao productDataStore = ProductDaoJDBC.getInstance();
     private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoJDBC.getInstance();
     private SupplierDao supplierDataStore = SupplierDaoJDBC.getInstance();
-    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
     private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
 
     @Override
@@ -40,22 +36,13 @@ public class ShoppingCartController extends HttpServlet {
             if (session.getAttribute("userId") == null) {
                 resp.sendRedirect("/");
             } else {
-                // Getting Products for shopping cart: (1) Getting active Cart's id -> (2) Getting ShoppingCartProducts -> (3) Getting Products
-                // 1
-                int activeCartId = shoppingCartDataStore.findActiveCart().getId();
-                // 2
-                List<ShoppingCartProduct> shoppingCartProductsInCart = shoppingCartProductsDataStore.getShoppingCartProductsByShoppingCartId(activeCartId);
-                // 3
-                Set<Product> productsInCart = productDataStore.getProductsForShoppingCart(shoppingCartProductsInCart);
-                List<Product> allProductsInCart = productDataStore.getAllProductsForShoppingCart(shoppingCartProductsInCart);
+                int userId = (Integer) session.getAttribute("userId");
+                List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
 
-                // Getting total item count
-                int totalItemNumInCart = allProductsInCart.size();
-                // Getting total price for cart
-                float totalPrice = shoppingCartDataStore.calculateTotalPrice(allProductsInCart);
+                int totalItemNumInCart = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
+                float totalPrice = shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts);
 
-                context.setVariable("products", productsInCart);
-                context.setVariable("shopping_cart_data", shoppingCartProductsDataStore.getAllProductQuantity(activeCartId, productsInCart));
+                context.setVariable("products", shoppingCartProducts);
                 context.setVariable("totalItemNum", totalItemNumInCart);
                 context.setVariable("totalPrice", totalPrice);
                 context.setVariable("category", productCategoryDataStore.getAll());

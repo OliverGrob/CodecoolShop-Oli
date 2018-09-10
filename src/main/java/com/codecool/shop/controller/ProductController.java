@@ -65,7 +65,7 @@ public class ProductController extends HttpServlet {
         String categoryNameFromUrl = req.getParameter("category");
         String supplierNameFromUrl = req.getParameter("supplier");
 
-        shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartDataStore.findActiveCart().getId(),
+        shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartDataStore.findActiveCartForUser((Integer) session.getAttribute("userId")).getId(),
                                                                Integer.parseInt(req.getParameter("product")));
 
         context.setVariable("category", productCategoryDataStore.getAll());

@@ -4,7 +4,6 @@ import com.codecool.shop.dao.ProductDao;
 import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.dao.ShoppingCartProductsDao;
 import com.codecool.shop.dao.implementation.*;
-import com.codecool.shop.model.Product;
 import com.codecool.shop.model.ShoppingCartProduct;
 import com.google.gson.Gson;
 
@@ -20,7 +19,6 @@ import java.util.Map;
 
 @WebServlet(urlPatterns = {"/change-quantity"})
 public class ShoppingCartAjaxController extends HttpServlet {
-    private ProductDao productDataStore = ProductDaoJDBC.getInstance();
     private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
     private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
 
@@ -38,13 +36,10 @@ public class ShoppingCartAjaxController extends HttpServlet {
             } else {
                 Map<String, Integer> newData = new HashMap<>();
 
-                int activeCartId = shoppingCartDataStore.findActiveCart().getId();
-                List<ShoppingCartProduct> shoppingCartProductsInCart = shoppingCartProductsDataStore.getShoppingCartProductsByShoppingCartId(activeCartId);
-                List<Product> productsInCart = productDataStore.getAllProductsForShoppingCart(shoppingCartProductsInCart);
-
-                int totalItemNumInCart = productsInCart.size();
-
-                newData.put("totalItemsInCart", totalItemNumInCart);
+                newData.put("totalItemsInCart",
+                        shoppingCartProductsDataStore.calculateTotalItemNumber(
+                                shoppingCartProductsDataStore.getShoppingCartProductsByUser((Integer) session.getAttribute("userId"))
+                        ));
                 String json = new Gson().toJson(newData);
 
                 resp.setContentType("application/json");
@@ -68,22 +63,20 @@ public class ShoppingCartAjaxController extends HttpServlet {
             } else {
                 Map<String, Integer> newData = new HashMap<>();
 
+                int userId = (Integer) session.getAttribute("userId");
+                int newQuantity = 0;
                 int productId = Integer.parseInt(req.getParameter("id"));
-                int shoppingCartId = shoppingCartDataStore.findActiveCart().getId();
+                int shoppingCartId = shoppingCartDataStore.findActiveCartForUser(userId).getId();
+                List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
 
                 if (req.getParameter("quantity").equals("decrease")) {
-                    shoppingCartProductsDataStore.removeProductFromShoppingCart(shoppingCartDataStore.findActiveCart().getId(), productId);
+                    newQuantity = shoppingCartProductsDataStore.removeProductFromShoppingCart(shoppingCartId, productId);
                 } else if (req.getParameter("quantity").equals("increase")) {
-                    shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartDataStore.findActiveCart().getId(), productId);
+                    newQuantity = shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartId, productId);
                 }
 
-                int activeCartId = shoppingCartDataStore.findActiveCart().getId();
-                List<ShoppingCartProduct> shoppingCartProductsInCart = shoppingCartProductsDataStore.getShoppingCartProductsByShoppingCartId(activeCartId);
-                List<Product> productsInCart = productDataStore.getAllProductsForShoppingCart(shoppingCartProductsInCart);
-
-                int newQuantity = shoppingCartProductsDataStore.getProductQuantityByProductIdInActiveCart(shoppingCartId, productId);
-                int newTotalItems = productsInCart.size();
-                int newTotalPrice = Math.round(shoppingCartDataStore.calculateTotalPrice(productsInCart) * 100) / 100;
+                int newTotalItems = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
+                int newTotalPrice = Math.round(shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts) * 100) / 100;
 
                 newData.put("productId", productId);
                 newData.put("newQuantity", newQuantity);
