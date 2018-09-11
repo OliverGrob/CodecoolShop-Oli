@@ -10,20 +10,20 @@ let dom = {
 
     addEventListenersToButtons: function () {
         $(".fa-minus").on("click", function () {
-            dom.decreaseProductQuantity(this.id);
-            dom.showAlert("Item removed from cart!", "success");
             $("#item-count").text(--dom.shoppingCartItemNum);
+            dom.showAlert("Item removed from cart!", "success");
+            dom.decreaseProductQuantity(this.id);
         });
 
         $(".fa-plus").on("click", function () {
-            dom.increaseProductQuantity(this.id);
-            dom.showAlert("Item added to cart!", "success");
             $("#item-count").text(++dom.shoppingCartItemNum);
+            dom.showAlert("Item added to cart!", "success");
+            dom.increaseProductQuantity(this.id);
         });
 
         $(".add_to_cart").on("click", function () {
-            dom.showAlert("Item added to cart!", "success");
             $("#item-count").text(++dom.shoppingCartItemNum);
+            dom.showAlert("Item added to cart!", "success");
         });
 
         $(document).on("show_alert", ".alert", function(){
