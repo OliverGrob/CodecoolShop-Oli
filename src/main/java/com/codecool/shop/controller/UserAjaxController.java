@@ -19,35 +19,28 @@ import java.util.Map;
 
 @WebServlet(urlPatterns = {"/handle-user"})
 public class UserAjaxController extends HttpServlet {
+    private SessionManager sessionManager = SessionManager.getInstance();
     private ShoppingCartDao shoppingCart = ShoppingCartDaoJDBC.getInstance();
     private UserDao userHandler = UserDaoJDBC.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(false);
+        HttpSession session = sessionManager.getHttpSession(req, resp);
 
-        if (session == null) {
-            session = req.getSession(true);
-            session.setAttribute("userId", null);
-            resp.sendRedirect("/");
-        } else {
-            if (session.getAttribute("userId") == null) {
-                resp.sendRedirect("/");
-            } else {
-                Map<String, String> newData = new HashMap<>();
+        if (session == null) return;
 
-                session.setAttribute("userId", null);
+        Map<String, String> newData = new HashMap<>();
 
-                newData.put("alertColor", "success");
-                newData.put("alertMessage", "You logged out successfully!");
+        session.setAttribute("userId", null);
 
-                String json = new Gson().toJson(newData);
+        newData.put("alertColor", "success");
+        newData.put("alertMessage", "You logged out successfully!");
 
-                resp.setContentType("application/json");
-                resp.setCharacterEncoding("UTF-8");
-                resp.getWriter().write(json);
-            }
-        }
+        String json = new Gson().toJson(newData);
+
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.getWriter().write(json);
     }
 
     @Override

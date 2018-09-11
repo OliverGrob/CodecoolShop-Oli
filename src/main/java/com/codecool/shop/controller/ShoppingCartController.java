@@ -17,6 +17,7 @@ import java.util.List;
 
 @WebServlet(urlPatterns = {"/shopping-cart"})
 public class ShoppingCartController extends HttpServlet {
+    private SessionManager sessionManager = SessionManager.getInstance();
     private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoJDBC.getInstance();
     private SupplierDao supplierDataStore = SupplierDaoJDBC.getInstance();
     private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
@@ -26,32 +27,24 @@ public class ShoppingCartController extends HttpServlet {
         TemplateEngine engine = TemplateEngineUtil.getTemplateEngine(req.getServletContext());
         WebContext context = new WebContext(req, resp, req.getServletContext());
 
-        HttpSession session = req.getSession(false);
+        HttpSession session = sessionManager.getHttpSession(req, resp);
 
-        if (session == null) {
-            session = req.getSession(true);
-            session.setAttribute("userId", null);
-            resp.sendRedirect("/");
-        } else {
-            if (session.getAttribute("userId") == null) {
-                resp.sendRedirect("/");
-            } else {
-                int userId = (Integer) session.getAttribute("userId");
-                List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
+        if (session == null) return;
 
-                int totalItemNumInCart = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
-                float totalPrice = shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts);
+        int userId = (Integer) session.getAttribute("userId");
+        List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
 
-                context.setVariable("userId", userId);
-                context.setVariable("products", shoppingCartProducts);
-                context.setVariable("totalItemNum", totalItemNumInCart);
-                context.setVariable("totalPrice", totalPrice);
-                context.setVariable("category", productCategoryDataStore.getAll());
-                context.setVariable("supplier", supplierDataStore.getAll());
+        int totalItemNumInCart = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
+        float totalPrice = shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts);
 
-                engine.process("cart/shopping_cart.html", context, resp.getWriter());
-            }
-        }
+        context.setVariable("userId", userId);
+        context.setVariable("products", shoppingCartProducts);
+        context.setVariable("totalItemNum", totalItemNumInCart);
+        context.setVariable("totalPrice", totalPrice);
+        context.setVariable("category", productCategoryDataStore.getAll());
+        context.setVariable("supplier", supplierDataStore.getAll());
+
+        engine.process("cart/shopping_cart.html", context, resp.getWriter());
     }
 
 }

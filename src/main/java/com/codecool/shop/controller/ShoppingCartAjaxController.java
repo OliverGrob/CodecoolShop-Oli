@@ -1,6 +1,5 @@
 package com.codecool.shop.controller;
 
-import com.codecool.shop.dao.ProductDao;
 import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.dao.ShoppingCartProductsDao;
 import com.codecool.shop.dao.implementation.*;
@@ -19,76 +18,61 @@ import java.util.Map;
 
 @WebServlet(urlPatterns = {"/change-quantity"})
 public class ShoppingCartAjaxController extends HttpServlet {
+    private SessionManager sessionManager = SessionManager.getInstance();
     private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
     private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(false);
+        HttpSession session = sessionManager.getHttpSession(req, resp);
 
-        if (session == null) {
-            session = req.getSession(true);
-            session.setAttribute("userId", null);
-            resp.sendRedirect("/");
-        } else {
-            if (session.getAttribute("userId") == null) {
-                resp.sendRedirect("/");
-            } else {
-                Map<String, Integer> newData = new HashMap<>();
+        if (session == null) return;
 
-                newData.put("totalItemsInCart",
-                        shoppingCartProductsDataStore.calculateTotalItemNumber(
-                                shoppingCartProductsDataStore.getShoppingCartProductsByUser((Integer) session.getAttribute("userId"))
-                        ));
-                String json = new Gson().toJson(newData);
+        Map<String, Integer> newData = new HashMap<>();
 
-                resp.setContentType("application/json");
-                resp.setCharacterEncoding("UTF-8");
-                resp.getWriter().write(json);
-            }
-        }
+        newData.put("totalItemsInCart",
+                shoppingCartProductsDataStore.calculateTotalItemNumber(
+                        shoppingCartProductsDataStore.getShoppingCartProductsByUser((Integer) session.getAttribute("userId"))
+                ));
+        String json = new Gson().toJson(newData);
+
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.getWriter().write(json);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(false);
+        HttpSession session = sessionManager.getHttpSession(req, resp);
 
-        if (session == null) {
-            session = req.getSession(true);
-            session.setAttribute("userId", null);
-            resp.sendRedirect("/");
-        } else {
-            if (session.getAttribute("userId") == null) {
-                resp.sendRedirect("/");
-            } else {
-                Map<String, Integer> newData = new HashMap<>();
+        if (session == null) return;
 
-                int userId = (Integer) session.getAttribute("userId");
-                int newQuantity = 0;
-                int productId = Integer.parseInt(req.getParameter("id"));
-                int shoppingCartId = shoppingCartDataStore.findActiveCartForUser(userId).getId();
-                List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
+        Map<String, Integer> newData = new HashMap<>();
 
-                if (req.getParameter("quantity").equals("decrease")) {
-                    newQuantity = shoppingCartProductsDataStore.removeProductFromShoppingCart(shoppingCartId, productId);
-                } else if (req.getParameter("quantity").equals("increase")) {
-                    newQuantity = shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartId, productId);
-                }
+        int userId = (Integer) session.getAttribute("userId");
+        int newQuantity = 0;
+        int productId = Integer.parseInt(req.getParameter("id"));
+        int shoppingCartId = shoppingCartDataStore.findActiveCartForUser(userId).getId();
+        List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
 
-                int newTotalItems = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
-                int newTotalPrice = Math.round(shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts) * 100) / 100;
-
-                newData.put("productId", productId);
-                newData.put("newQuantity", newQuantity);
-                newData.put("newTotalItems", newTotalItems);
-                newData.put("newTotalPrice", newTotalPrice);
-                String json = new Gson().toJson(newData);
-
-                resp.setContentType("application/json");
-                resp.setCharacterEncoding("UTF-8");
-                resp.getWriter().write(json);
-            }
+        if (req.getParameter("quantity").equals("decrease")) {
+            newQuantity = shoppingCartProductsDataStore.removeProductFromShoppingCart(shoppingCartId, productId);
+        } else if (req.getParameter("quantity").equals("increase")) {
+            newQuantity = shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartId, productId);
         }
+
+        int newTotalItems = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
+        int newTotalPrice = Math.round(shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts) * 100) / 100;
+
+        newData.put("productId", productId);
+        newData.put("newQuantity", newQuantity);
+        newData.put("newTotalItems", newTotalItems);
+        newData.put("newTotalPrice", newTotalPrice);
+        String json = new Gson().toJson(newData);
+
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.getWriter().write(json);
     }
 
 }

@@ -17,6 +17,7 @@ import java.util.List;
 
 @WebServlet(urlPatterns = {"/"})
 public class ProductController extends HttpServlet {
+    private SessionManager sessionManager = SessionManager.getInstance();
     private ProductDao productDataStore = ProductDaoJDBC.getInstance();
     private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoJDBC.getInstance();
     private SupplierDao supplierDataStore = SupplierDaoJDBC.getInstance();
@@ -28,14 +29,9 @@ public class ProductController extends HttpServlet {
         TemplateEngine engine = TemplateEngineUtil.getTemplateEngine(req.getServletContext());
         WebContext context = new WebContext(req, resp, req.getServletContext());
 
-        HttpSession session = req.getSession(false);
+        HttpSession session = sessionManager.getHttpSession(req);
 
-        if (session == null) {
-            session = req.getSession(true);
-            session.setAttribute("userId", null);
-        } else {
-            context.setVariable("userId", session.getAttribute("userId"));
-        }
+        if (session != null) context.setVariable("userId", session.getAttribute("userId"));
 
         String categoryNameFromUrl = req.getParameter("category");
         String supplierNameFromUrl = req.getParameter("supplier");
@@ -53,14 +49,9 @@ public class ProductController extends HttpServlet {
         TemplateEngine engine = TemplateEngineUtil.getTemplateEngine(req.getServletContext());
         WebContext context = new WebContext(req, resp, req.getServletContext());
 
-        HttpSession session = req.getSession(false);
+        HttpSession session = sessionManager.getHttpSession(req);
 
-        if (session == null) {
-            session = req.getSession(true);
-            session.setAttribute("userId", null);
-        } else {
-            context.setVariable("userId", session.getAttribute("userId"));
-        }
+        if (session != null) context.setVariable("userId", session.getAttribute("userId"));
 
         String categoryNameFromUrl = req.getParameter("category");
         String supplierNameFromUrl = req.getParameter("supplier");

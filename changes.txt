@@ -21,7 +21,7 @@ TODO ------------------------------------------------------
 
  + 2 executeQuery function in JDBCController
  + rewrite all DaoJDBC-s with new query methods
- - session manager class
+ + session manager class
  - sort out every "multiple queries" (where more unnecessary query happens)
  - remove unused methods from interfaces and DaoMem-s
  - remove DaoMem-s completely
