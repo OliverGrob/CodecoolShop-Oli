@@ -64,7 +64,23 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
     @Override
     public ProductCategory find(int id) {
         List<Map<String, Object>> productCategories = controller.executeQueryWithReturnValue(
-        "SELECT * FROM product_category WHERE id = ?;",
+        "SELECT product_category.id, " +
+                  "product_category.name, " +
+                  "product_category.description, " +
+                  "product_category.department, " +
+                  "product.id AS prod_id," +
+                  "product.name AS prod_name, " +
+                  "product.default_price, " +
+                  "product.currency_string, " +
+                  "product.description AS prod_desc, " +
+                  "supplier.id AS supp_id, " +
+                  "supplier.name AS supp_name, " +
+                  "supplier.description AS supp_desc " +
+                "FROM product_category " +
+                  "JOIN product ON product.product_category_id = product_category.id " +
+                  "JOIN supplier ON product.supplier_id = supplier.id " +
+                "WHERE product_category.id = ? " +
+                "ORDER BY product_category.id;",
             Collections.singletonList(id));
 
         return (productCategories.size() != 0) ? this.objectCreator(productCategories).get(0) : null;
@@ -88,8 +104,8 @@ public class ProductCategoryDaoJDBC implements ProductCategoryDao {
                 "FROM product_category " +
                   "JOIN product ON product.product_category_id = product_category.id " +
                   "JOIN supplier ON product.supplier_id = supplier.id " +
-                "ORDER BY product_category.id " +
-                "WHERE product_category.name LIKE ?;",
+                "WHERE product_category.name LIKE ? " +
+                "ORDER BY product_category.id;",
             Collections.singletonList(name));
 
         return (productCategories.size() != 0) ? this.objectCreator(productCategories).get(0) : null;

@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,17 +82,27 @@ public class ProductController extends HttpServlet {
 
     private List<Product> getProducts(List<ProductCategory> productCategories, String categoryNameFromUrl,
                                       List<Supplier> suppliers, String supplierNameFromUrl) {
+
         List<ProductCategory> prodCats = productCategories.stream()
                 .filter(cat -> cat.getName().equals(categoryNameFromUrl))
                 .collect(Collectors.toList());
 
+        List<Supplier> supps = suppliers.stream()
+                .filter(supp -> supp.getName().equals(supplierNameFromUrl))
+                .collect(Collectors.toList());
+
         if (prodCats.size() != 0) {
             return prodCats.get(0).getProducts();
-        } else if (supplierDataStore.find(supplierNameFromUrl) != null) {
-            return productDataStore.getBySupplier(supplierDataStore.find(supplierNameFromUrl).getId());
+        } else if (supps.size() != 0) {
+            return supps.get(0).getProducts();
         }
 
-        return productDataStore.getAll();
+        List<Product> allProducts = new ArrayList<>();
+        for (ProductCategory productCategory : productCategories) {
+            allProducts.addAll(productCategory.getProducts());
+        }
+
+        return allProducts;
     }
 
     private String getCategoryImg (String categoryNameFromUrl) {
