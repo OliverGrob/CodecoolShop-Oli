@@ -26,7 +26,12 @@ TODO ------------------------------------------------------
  - remove unused methods from interfaces and DaoMem-s
  - remove DaoMem-s completely
  + every object-s foreign key in SQL should appear as an object reference in their fields
- - no more than 1 query in each controller method
  + user controller -> proper login/register
- - use Supplier and ProductCategory product ArrayList field
+ + use Supplier and ProductCategory product ArrayList field
      (Product object creation is recursive -> Product->ProductCategory->Product->ProductCategory forever)
+ - email sending where we have to
+ - login with google account
+ - basic testing and logging
+ - final touches on checkout page (address handling, email sent screen etc.)
+ - fix the theme picture size problem
+ - order history page

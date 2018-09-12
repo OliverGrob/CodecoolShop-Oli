@@ -4,6 +4,8 @@ import com.codecool.shop.dao.*;
 import com.codecool.shop.dao.implementation.*;
 import com.codecool.shop.config.TemplateEngineUtil;
 import com.codecool.shop.model.Product;
+import com.codecool.shop.model.ProductCategory;
+import com.codecool.shop.model.Supplier;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -14,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet(urlPatterns = {"/"})
 public class ProductController extends HttpServlet {
@@ -36,10 +39,14 @@ public class ProductController extends HttpServlet {
         String categoryNameFromUrl = req.getParameter("category");
         String supplierNameFromUrl = req.getParameter("supplier");
 
-        context.setVariable("category", productCategoryDataStore.getAll());
-        context.setVariable("supplier", supplierDataStore.getAll());
+        List<ProductCategory> productCategories = productCategoryDataStore.getAll();
+        List<Supplier> suppliers = supplierDataStore.getAll();
+
+        context.setVariable("category", productCategories);
+        context.setVariable("supplier", suppliers);
         context.setVariable("category_name", getCategoryImg(categoryNameFromUrl));
-        context.setVariable("products", getProducts(categoryNameFromUrl, supplierNameFromUrl));
+        context.setVariable("products", getProducts(productCategories, categoryNameFromUrl,
+                                                        suppliers, supplierNameFromUrl));
 
         engine.process("product/index.html", context, resp.getWriter());
     }
@@ -59,18 +66,27 @@ public class ProductController extends HttpServlet {
         shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartDataStore.findActiveCartForUser((Integer) session.getAttribute("userId")).getId(),
                                                                Integer.parseInt(req.getParameter("product")));
 
-        context.setVariable("category", productCategoryDataStore.getAll());
-        context.setVariable("supplier", supplierDataStore.getAll());
+        List<ProductCategory> productCategories = productCategoryDataStore.getAll();
+        List<Supplier> suppliers = supplierDataStore.getAll();
+
+        context.setVariable("category", productCategories);
+        context.setVariable("supplier", suppliers);
         context.setVariable("category_name", getCategoryImg(categoryNameFromUrl));
-        context.setVariable("products", getProducts(categoryNameFromUrl, supplierNameFromUrl));
+        context.setVariable("products", getProducts(productCategories, categoryNameFromUrl,
+                                                        suppliers, supplierNameFromUrl));
 
         engine.process("product/index.html", context, resp.getWriter());
 
     }
 
-    private List<Product> getProducts(String categoryNameFromUrl, String supplierNameFromUrl) {
-        if (productCategoryDataStore.find(categoryNameFromUrl) != null) {
-            return productDataStore.getByProductCategory(productCategoryDataStore.find(categoryNameFromUrl).getId());
+    private List<Product> getProducts(List<ProductCategory> productCategories, String categoryNameFromUrl,
+                                      List<Supplier> suppliers, String supplierNameFromUrl) {
+        List<ProductCategory> prodCats = productCategories.stream()
+                .filter(cat -> cat.getName().equals(categoryNameFromUrl))
+                .collect(Collectors.toList());
+
+        if (prodCats.size() != 0) {
+            return prodCats.get(0).getProducts();
         } else if (supplierDataStore.find(supplierNameFromUrl) != null) {
             return productDataStore.getBySupplier(supplierDataStore.find(supplierNameFromUrl).getId());
         }
