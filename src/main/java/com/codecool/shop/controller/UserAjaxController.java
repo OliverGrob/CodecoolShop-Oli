@@ -25,9 +25,12 @@ public class UserAjaxController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = sessionManager.getHttpSession(req, resp);
+        HttpSession session = sessionManager.getHttpSessionRedirect(req);
 
-        if (session == null) return;
+        if (session == null) {
+            resp.sendRedirect("/");
+            return;
+        }
 
         Map<String, String> newData = new HashMap<>();
 

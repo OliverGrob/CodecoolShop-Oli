@@ -27,9 +27,12 @@ public class ShoppingCartController extends HttpServlet {
         TemplateEngine engine = TemplateEngineUtil.getTemplateEngine(req.getServletContext());
         WebContext context = new WebContext(req, resp, req.getServletContext());
 
-        HttpSession session = sessionManager.getHttpSession(req, resp);
+        HttpSession session = sessionManager.getHttpSessionRedirect(req);
 
-        if (session == null) return;
+        if (session == null) {
+            resp.sendRedirect("/");
+            return;
+        }
 
         int userId = (Integer) session.getAttribute("userId");
         List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);

@@ -1,9 +1,7 @@
 package com.codecool.shop.controller;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 
 public class SessionManager {
 
@@ -17,17 +15,15 @@ public class SessionManager {
         return instance;
     }
 
-    public HttpSession getHttpSession(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public HttpSession getHttpSessionRedirect(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
 
         if (session == null) {
             session = req.getSession(true);
             session.setAttribute("userId", null);
-            resp.sendRedirect("/");
             return null;
         } else {
             if (session.getAttribute("userId") == null) {
-                resp.sendRedirect("/");
                 return null;
             }
         }
