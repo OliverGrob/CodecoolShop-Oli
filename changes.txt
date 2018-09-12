@@ -23,8 +23,8 @@ TODO ------------------------------------------------------
  + rewrite all DaoJDBC-s with new query methods
  + session manager class
  - sort out every "multiple queries" (where more unnecessary query happens)
- - remove unused methods from interfaces and DaoMem-s
- - remove DaoMem-s completely
+ + remove unused methods from interfaces
+ + remove DaoMem-s completely
  + every object-s foreign key in SQL should appear as an object reference in their fields
  + user controller -> proper login/register
  + use Supplier and ProductCategory product ArrayList field

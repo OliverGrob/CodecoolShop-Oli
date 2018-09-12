@@ -115,40 +115,4 @@ public class ProductDaoJDBC implements ProductDao {
             Collections.emptyList()));
     }
 
-    @Override
-    public List<Product> getBySupplier(int supplierId) {
-        return this.objectCreator(controller.executeQueryWithReturnValue(
-        "SELECT product.id, product.name, product.default_price, product.currency_string, product.description, " +
-                  "product_category.id AS prod_cat_id, " +
-                  "product_category.name AS prod_cat_name, " +
-                  "product_category.description AS prod_cat_desc, " +
-                  "product_category.department AS prod_cat_dep, " +
-                  "supplier.id AS supp_id, " +
-                  "supplier.name AS supp_name, " +
-                  "supplier.description AS supp_desc " +
-                "FROM product " +
-                  "JOIN product_category ON product.product_category_id = product_category.id " +
-                  "JOIN supplier ON product.supplier_id = supplier.id " +
-                "WHERE supplier.id = ?;",
-            Collections.singletonList(supplierId)));
-    }
-
-    @Override
-    public List<Product> getByProductCategory(int productCategoryId) {
-        return this.objectCreator(controller.executeQueryWithReturnValue(
-        "SELECT product.id, product.name, product.default_price, product.currency_string, product.description, " +
-                  "product_category.id AS prod_cat_id, " +
-                  "product_category.name AS prod_cat_name, " +
-                  "product_category.description AS prod_cat_desc, " +
-                  "product_category.department AS prod_cat_dep, " +
-                  "supplier.id AS supp_id, " +
-                  "supplier.name AS supp_name, " +
-                  "supplier.description AS supp_desc " +
-                "FROM product " +
-                  "JOIN product_category ON product.product_category_id = product_category.id " +
-                  "JOIN supplier ON product.supplier_id = supplier.id " +
-                "WHERE product_category.id = ?;",
-            Collections.singletonList(productCategoryId)));
-    }
-
 }
