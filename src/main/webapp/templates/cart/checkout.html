@@ -46,21 +46,24 @@
                             <!--</form>-->
                         </div>
                     </div>
-                    <div class="col-md-8 order-md-1 pt-2 pb-2 mr-4 border border-primary rounded text-white checkout-menu">
+                    <div class="col-md-8 order-md-1 pt-2 pb-2 mr-4 border border-primary rounded text-white checkout-menu"
+                         th:each="user : ${user}">
                         <h4 class="mb-3" data-toggle="collapse">Billing address</h4>
                         <form id="checkout" class="needs-validation collapse show" novalidate=""
                               data-toggle="collapse" data-parent="#checkout_accordion">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="first_name_billing">First name</label>
-                                    <input type="text" class="form-control" id="first_name_billing" placeholder="" value="" required="">
+                                    <input type="text" class="form-control" id="first_name_billing"
+                                           th:value="${user.getFirstName()}" placeholder="Lakatos" required="">
                                     <div class="invalid-feedback">
                                         Valid first name is required.
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="last_name_billing">Last name</label>
-                                    <input type="text" class="form-control" id="last_name_billing" placeholder="" value="" required="">
+                                    <input type="text" class="form-control" id="last_name_billing"
+                                           th:value="${user.getLastName()}" placeholder="Marlonbrando" required="">
                                     <div class="invalid-feedback">
                                         Valid last name is required.
                                     </div>
@@ -68,29 +71,9 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="username">Username</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">@</span>
-                                    </div>
-                                    <input type="text" class="form-control" id="username" placeholder="Username" required="">
-                                    <div class="invalid-feedback" style="width: 100%;">
-                                        Your username is required.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="email">Email <span class="text-muted">(Optional)</span></label>
-                                <input type="email" class="form-control" id="email" placeholder="you@example.com">
-                                <div class="invalid-feedback">
-                                    Please enter a valid email address for shipping updates.
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
                                 <label for="address_billing">Address</label>
-                                <input type="text" class="form-control" id="address_billing" placeholder="1234 Main St" required="">
+                                <input type="text" class="form-control" id="address_billing"
+                                       th:value="${user.getAddress()}" placeholder="1234 Main St" required="">
                                 <div class="invalid-feedback">
                                     Please enter your shipping address.
                                 </div>
@@ -100,8 +83,8 @@
                                 <div class="col-md-5 mb-3">
                                     <label for="country_billing">Country</label>
                                     <select class="custom-select d-block w-100" id="country_billing" required="">
-                                        <option value="">Choose...</option>
-                                        <option>United States</option>
+                                        <option th:value="${user.getCountry()}">Choose...</option>
+                                        <option th:selected="true">United States</option>
                                     </select>
                                     <div class="invalid-feedback">
                                         Please select a valid country.
@@ -110,8 +93,8 @@
                                 <div class="col-md-4 mb-3">
                                     <label for="state_billing">State</label>
                                     <select class="custom-select d-block w-100" id="state_billing" required="">
-                                        <option value="">Choose...</option>
-                                        <option>California</option>
+                                        <option th:value="${user.getCity()}">Choose...</option>
+                                        <option th:selected="true">California</option>
                                     </select>
                                     <div class="invalid-feedback">
                                         Please provide a valid state.
@@ -119,7 +102,8 @@
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label for="zip_billing">Zip</label>
-                                    <input type="text" class="form-control" id="zip_billing" placeholder="" required="">
+                                    <input type="text" class="form-control" id="zip_billing"
+                                           th:value="${user.getZipCode()}" placeholder="9999" required="">
                                     <div class="invalid-feedback">
                                         Zip code required.
                                     </div>
@@ -128,7 +112,8 @@
                             <hr class="mb-4">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="same-address"
-                                       data-toggle="collapse" data-target="#shipping_address">
+                                       data-toggle="collapse" data-target="#shipping_address"
+                                       th:checked="${user.isShippingSame()}">
                                 <label class="custom-control-label" for="same-address">Shipping address is the same as my billing address</label>
                             </div>
                             <div class="custom-control custom-checkbox">
@@ -136,7 +121,8 @@
                                 <label class="custom-control-label" for="save-info">Save this information for next time</label>
                             </div>
                             <hr class="mb-4">
-                            <div id="shipping_address" class="collapse show" data-toggle="collapse">
+                            <div id="shipping_address" class="collapse" data-toggle="collapse"
+                                 th:classappend="${user.isShippingSame()} ? '' : 'show'">
                                 <h4 class="mb-3" data-toggle="collapse">Shipping address</h4>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
