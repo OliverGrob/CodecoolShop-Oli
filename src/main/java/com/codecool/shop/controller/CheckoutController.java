@@ -4,6 +4,7 @@ import com.codecool.shop.config.TemplateEngineUtil;
 import com.codecool.shop.dao.*;
 import com.codecool.shop.dao.implementation.*;
 import com.codecool.shop.model.ShoppingCartProduct;
+import com.codecool.shop.model.User;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -21,6 +22,7 @@ public class CheckoutController extends HttpServlet {
     private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoJDBC.getInstance();
     private SupplierDao supplierDataStore = SupplierDaoJDBC.getInstance();
     private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
+    private UserDao userHanlder = UserDaoJDBC.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -34,13 +36,14 @@ public class CheckoutController extends HttpServlet {
             return;
         }
 
-        int userId = (Integer) session.getAttribute("userId");
-        List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
+        User user = userHanlder.find((Integer) session.getAttribute("userId"));
+        List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(user.getId());
 
         int totalItemNumInCart = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
         float totalPrice = shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts);
 
-        context.setVariable("userId", userId);
+        context.setVariable("user", user);
+        context.setVariable("userId", user.getId());
         context.setVariable("products", shoppingCartProducts);
         context.setVariable("totalItemNum", totalItemNumInCart);
         context.setVariable("totalPrice", totalPrice);

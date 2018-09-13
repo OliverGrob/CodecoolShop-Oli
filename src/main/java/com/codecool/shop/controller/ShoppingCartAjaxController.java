@@ -53,13 +53,12 @@ public class ShoppingCartAjaxController extends HttpServlet {
             return;
         }
 
-        Map<String, Integer> newData = new HashMap<>();
+        Map<String, Object> newData = new HashMap<>();
 
         int userId = (Integer) session.getAttribute("userId");
         int newQuantity = 0;
         int productId = Integer.parseInt(req.getParameter("id"));
         int shoppingCartId = shoppingCartDataStore.findActiveCartForUser(userId).getId();
-        List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
 
         if (req.getParameter("quantity").equals("decrease")) {
             newQuantity = shoppingCartProductsDataStore.removeProductFromShoppingCart(shoppingCartId, productId);
@@ -67,8 +66,10 @@ public class ShoppingCartAjaxController extends HttpServlet {
             newQuantity = shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartId, productId);
         }
 
+        List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(userId);
+
         int newTotalItems = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
-        int newTotalPrice = Math.round(shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts) * 100) / 100;
+        float newTotalPrice = shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts);
 
         newData.put("productId", productId);
         newData.put("newQuantity", newQuantity);

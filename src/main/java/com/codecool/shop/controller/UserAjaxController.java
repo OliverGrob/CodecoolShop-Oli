@@ -65,12 +65,12 @@ public class UserAjaxController extends HttpServlet {
                     userHandler.add(req.getParameter("userEmail"), req.getParameter("userPassword"));
                     newData.put("alertColor", "success");
                     newData.put("alertMessage", "You registered successfully!");
+                    shoppingCart.add(userHandler.find(req.getParameter("userEmail")).getId(), new java.sql.Date(new Date().getTime()));
+//                this.sendEmail(req.getParameter("userEmail"));
                 } else {
                     newData.put("alertColor", "danger");
                     newData.put("alertMessage", "Email is already in use or your passwords do not match!");
                 }
-                shoppingCart.add(userHandler.find(req.getParameter("userEmail")).getId(), new java.sql.Date(new Date().getTime()));
-//                this.sendEmail(req.getParameter("userEmail"));
                 break;
             case "login":
                 if (userHandler.validLogin(req.getParameter("userEmail"), req.getParameter("userPassword"))) {
