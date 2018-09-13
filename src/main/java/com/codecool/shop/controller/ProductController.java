@@ -72,6 +72,7 @@ public class ProductController extends HttpServlet {
         List<ProductCategory> productCategories = productCategoryDataStore.getAll();
         List<Supplier> suppliers = supplierDataStore.getAll();
 
+        context.setVariable("userId", session.getAttribute("userId"));
         context.setVariable("category", productCategories);
         context.setVariable("supplier", suppliers);
         context.setVariable("category_name", getCategoryImg(categoryNameFromUrl));
