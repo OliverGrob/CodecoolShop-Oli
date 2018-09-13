@@ -119,6 +119,7 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
                     "RETURNING amount;",
                 Arrays.asList(productAmount, shoppingCartId, productId)).get(0).get("amount");
         }
+
         return newAmount;
     }
 
@@ -155,7 +156,9 @@ public class ShoppingCartProductsDaoJDBC implements ShoppingCartProductsDao {
 
     @Override
     public float calculateTotalPrice(List<ShoppingCartProduct> shoppingCartProducts) {
-        return (float) shoppingCartProducts.stream().mapToDouble(product -> product.getProduct().getDefaultPrice()).sum();
+        return (float) Math.round(shoppingCartProducts.stream()
+                .mapToDouble(product -> product.getProduct().getDefaultPrice() * product.getAmount())
+                .sum() * 100) / 100;
     }
 
 }
