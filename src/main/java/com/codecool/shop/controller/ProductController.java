@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @WebServlet(urlPatterns = {"/"})
 public class ProductController extends HttpServlet {
     private SessionManager sessionManager = SessionManager.getInstance();
-    private ProductDao productDataStore = ProductDaoJDBC.getInstance();
     private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoJDBC.getInstance();
     private SupplierDao supplierDataStore = SupplierDaoJDBC.getInstance();
     private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
@@ -57,15 +56,18 @@ public class ProductController extends HttpServlet {
         TemplateEngine engine = TemplateEngineUtil.getTemplateEngine(req.getServletContext());
         WebContext context = new WebContext(req, resp, req.getServletContext());
 
-        HttpSession session = sessionManager.getHttpSession(req);
+        HttpSession session = sessionManager.getHttpSessionRedirect(req);
 
-        if (session != null) context.setVariable("userId", session.getAttribute("userId"));
+        if (session == null) {
+            resp.sendRedirect("/");
+            return;
+        }
 
         String categoryNameFromUrl = req.getParameter("category");
         String supplierNameFromUrl = req.getParameter("supplier");
 
-        shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartDataStore.findActiveCartForUser((Integer) session.getAttribute("userId")).getId(),
-                                                               Integer.parseInt(req.getParameter("product")));
+        int shoppingCartId = shoppingCartDataStore.findActiveCartForUser((Integer) session.getAttribute("userId")).getId();
+        shoppingCartProductsDataStore.addProductToShoppingCart(shoppingCartId, Integer.parseInt(req.getParameter("product")));
 
         List<ProductCategory> productCategories = productCategoryDataStore.getAll();
         List<Supplier> suppliers = supplierDataStore.getAll();
