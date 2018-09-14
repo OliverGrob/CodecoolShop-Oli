@@ -54,7 +54,9 @@ public class CheckoutAjaxController extends HttpServlet {
                 shoppingCartDataStore.changeCartStatus(userId,
                         Integer.parseInt(req.getParameter("shoppingCartId")),
                         ShoppingCartStatus.CHECKED);
-                shoppingCartDataStore.add(userId, new java.sql.Date(new Date().getTime()));
+                if (shoppingCartDataStore.findActiveCartForUser(userId) == null) {
+                    shoppingCartDataStore.add(userId, new java.sql.Date(new Date().getTime()));
+                }
 
                 if (Boolean.parseBoolean(req.getParameter("isShippingSame"))) {
                     shippingAddressHandler.addShippingAddress(userId,

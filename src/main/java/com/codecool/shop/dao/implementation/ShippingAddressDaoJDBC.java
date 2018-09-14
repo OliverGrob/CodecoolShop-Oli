@@ -54,8 +54,8 @@ public class ShippingAddressDaoJDBC implements ShippingAddressDao {
     }
 
     @Override
-    public ShippingAddress find(int userId) {
-        List<Map<String, Object>> shippingAddresses = controller.executeQueryWithReturnValue(
+    public List<ShippingAddress> findShippingAddressesByUser(int userId) {
+        return this.objectCreator(controller.executeQueryWithReturnValue(
         "SELECT users.id, users.email_address, users.password, users.first_name, users.last_name, " +
                   "users.country AS country_user, " +
                   "users.city AS city_user, " +
@@ -69,16 +69,22 @@ public class ShippingAddressDaoJDBC implements ShippingAddressDao {
                 "FROM shipping_address " +
                   "JOIN users ON shipping_address.user_id = users.id " +
                 "WHERE shipping_address.user_id = ?;",
-            Collections.singletonList(userId));
-
-        return (shippingAddresses.size() != 0) ? this.objectCreator(shippingAddresses).get(0) : null;
+            Collections.singletonList(userId)));
     }
 
     private boolean isNewShippingAddress(int userId, String address, String country, String city, String zipCode) {
-        ShippingAddress shippingAddress = this.find(userId);
+        List<ShippingAddress> shippingAddresses = this.findShippingAddressesByUser(userId);
 
-        return address.equals(shippingAddress.getAddress()) && country.equals(shippingAddress.getCountry()) &&
-                city.equals(shippingAddress.getCity()) && zipCode.equals(shippingAddress.getZipCode());
+        if (shippingAddresses.size() != 0) {
+            for (ShippingAddress shippingAddress : shippingAddresses) {
+                if (shippingAddress.getAddress().equals(address) && shippingAddress.getCountry().equals(country) &&
+                        shippingAddress.getCity().equals(city) && shippingAddress.getZipCode().equals(zipCode)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
 }
