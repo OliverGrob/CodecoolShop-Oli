@@ -81,11 +81,11 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
     }
 
     @Override
-    public void changeCartStatus(int userId, ShoppingCartStatus statusFrom, ShoppingCartStatus statusTo) {
+    public void changeCartStatus(int userId, int shoppingCartId, ShoppingCartStatus changeStatusTo) {
         controller.executeQuery(
         "UPDATE shopping_cart SET status = ? " +
-                "WHERE user_id = ? AND status = ?;",
-            Arrays.asList(statusTo.toString(), userId, statusFrom.toString()));
+                "WHERE shopping_cart.id = ? AND shopping_cart.user_id = ?;",
+            Arrays.asList(changeStatusTo.toString(), shoppingCartId, userId));
     }
 
     @Override

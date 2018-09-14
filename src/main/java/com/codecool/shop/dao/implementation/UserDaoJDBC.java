@@ -43,7 +43,7 @@ public class UserDaoJDBC implements UserDao {
     public void add(String emailAddress, String password) {
         controller.executeQuery(
         "INSERT INTO users (id, email_address, password, first_name, last_name, country, city, address, zip_code, is_shipping_same) " +
-                "VALUES (DEFAULT, ?, ?, 'None',  'None', 'None', 'None', 'None', 'None', false);",
+                "VALUES (DEFAULT, ?, ?, '',  '', '', '', '', '', false);",
             Arrays.asList(emailAddress, password));
     }
 
@@ -55,6 +55,15 @@ public class UserDaoJDBC implements UserDao {
                 "city, address, zip_code, is_shipping_same) " +
                 "VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
             Arrays.asList(emailAddress, password, firstName, lastName, country, city, address, zipCode, isShippingSame));
+    }
+
+    @Override
+    public void setBillingAddress(int userId, String firstName, String lastName, String country,
+                                  String city, String address, String zipCode, Boolean isShippingSame) {
+        controller.executeQuery(
+        "UPDATE users SET first_name = ?, last_name = ?, country = ?, city = ?, address = ?, zip_code = ?, is_shipping_same = ? " +
+                "WHERE users.id = ?;",
+            Arrays.asList(firstName, lastName, country, city, address, zipCode, isShippingSame, userId));
     }
 
     @Override

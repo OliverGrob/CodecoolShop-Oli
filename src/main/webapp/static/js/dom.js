@@ -40,6 +40,17 @@ let dom = {
                 // scrollTop: $("#payment").offset().top
                 scrollTop: 180
             }, 1000);
+            if ($("#same-address").val()) {
+                dataHandler.checkOutCartSameAddress($("#shopping_cart_id").val(), $("#first_name_billing").val(),
+                    $("#last_name_billing").val(), $("#address_billing").val(), $("#country_billing").val(),
+                    $("#state_billing").val(), $("#zip_billing").val(), true, dom.cartCheckedOut);
+            } else {
+                dataHandler.checkoutCartDifferentAddress($("#shopping_cart_id").val(), $("#first_name_billing").val(),
+                    $("#last_name_billing").val(), $("#address_billing").val(), $("#country_billing").val(),
+                    $("#state_billing").val(), $("#zip_billing").val(), false, $("#address_shipping").val(),
+                    $("#country_shipping").val(), $("#state_shipping").val(), $("#zip_shipping").val(),
+                    dom.cartCheckedOut)
+            }
         });
 
         $("#payment_back_button").on("click", function () {
@@ -48,10 +59,12 @@ let dom = {
 
         $("#payment_next_button").on("click", function () {
             $("html, body").animate({ scrollTop: 270 }, 1000);
+            dataHandler.payment($("#shopping_cart_id").val(), dom.paymentInfo);
         });
 
         $("#confirmation_button").on("click", function () {
             $("html, body").animate({ scrollTop: 0 }, 1000);
+            dataHandler.confirmation($("#shopping_cart_id").val(), dom.confirmInfo);
         });
 
         $("#register-button").on("click", function () {
@@ -159,6 +172,18 @@ let dom = {
             $(".logged-in").toggleClass("d-none");
         }
         window.location.href = "/";
+    },
+
+    cartCheckedOut: function (alertInfo) {
+        dom.showAlert(alertInfo["alertMessage"], alertInfo["alertColor"]);
+    },
+
+    paymentInfo: function (alertInfo) {
+        dom.showAlert(alertInfo["alertMessage"], alertInfo["alertColor"]);
+    },
+
+    confirmInfo: function (alertInfo) {
+        dom.showAlert(alertInfo["alertMessage"], alertInfo["alertColor"]);
     }
 };
 

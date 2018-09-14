@@ -4,15 +4,10 @@ import com.codecool.shop.dao.ShoppingCartDao;
 import com.codecool.shop.dao.UserDao;
 import com.codecool.shop.dao.implementation.ShoppingCartDaoJDBC;
 import com.codecool.shop.dao.implementation.UserDaoJDBC;
+import com.codecool.shop.email.EmailManager;
 import com.codecool.shop.model.User;
 import com.google.gson.Gson;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -22,11 +17,11 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 @WebServlet(urlPatterns = {"/handle-user"})
 public class UserAjaxController extends HttpServlet {
     private SessionManager sessionManager = SessionManager.getInstance();
+    private EmailManager emailManager = EmailManager.getInstance();
     private ShoppingCartDao shoppingCart = ShoppingCartDaoJDBC.getInstance();
     private UserDao userHandler = UserDaoJDBC.getInstance();
 
@@ -66,7 +61,7 @@ public class UserAjaxController extends HttpServlet {
                     newData.put("alertColor", "success");
                     newData.put("alertMessage", "You registered successfully!");
                     shoppingCart.add(userHandler.find(req.getParameter("userEmail")).getId(), new java.sql.Date(new Date().getTime()));
-//                this.sendEmail(req.getParameter("userEmail"));
+                emailManager.sendEmail(req.getParameter("userEmail"));
                 } else {
                     newData.put("alertColor", "danger");
                     newData.put("alertMessage", "Email is already in use or your passwords do not match!");
@@ -95,44 +90,6 @@ public class UserAjaxController extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         resp.getWriter().write(json);
-
-    }
-
-    private void sendEmail(String emailAddress) {
-        String sentFrom = "intAirnet";
-        String pass = "intAirnetSzOZD";
-        String sentTo = "groboliver1117@gmail.com";
-        String host = "smtp.gmail.com";
-
-        Properties properties = System.getProperties();
-        properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.smtp.host", host);
-        properties.put("mail.smtp.user", sentFrom);
-        properties.put("mail.smtp.password", pass);
-        properties.put("mail.smtp.port", "587");
-        properties.put("mail.smtp.auth", "true");
-
-        Session session = Session.getDefaultInstance(properties);
-
-        try {
-            MimeMessage message = new MimeMessage(session);
-
-            message.setFrom(new InternetAddress(sentFrom));
-
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(sentTo));
-
-            message.setSubject("Registration");
-            message.setText("You registered successfully!");
-
-            Transport transport = session.getTransport("smtp");
-            transport.connect(host, sentFrom , pass);
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();
-            System.out.println("Message sent successfully!");
-
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
     }
 
 }

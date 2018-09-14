@@ -10,6 +10,9 @@ public interface UserDao {
     void add(String emailAddress, String password, String firstName, String lastName, String country,
              String city, String address, String zipCode, boolean isShippingSame);
 
+    void setBillingAddress(int userId, String firstName, String lastName, String country,
+                           String city, String address, String zipCode, Boolean isShippingSame);
+
     User find(int id);
     User find(String email);
 

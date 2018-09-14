@@ -11,7 +11,7 @@ public interface ShoppingCartDao {
 
     ShoppingCart find(int id);
     ShoppingCart findActiveCartForUser(int userId);
-    void changeCartStatus(int userId, ShoppingCartStatus statusFrom, ShoppingCartStatus statusTo);
+    void changeCartStatus(int userId, int shoppingCartId, ShoppingCartStatus statusTo);
 
     void remove(int id);
 

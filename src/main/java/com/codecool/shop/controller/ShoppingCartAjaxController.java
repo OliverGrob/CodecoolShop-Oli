@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(urlPatterns = {"/change-quantity"})
+@WebServlet(urlPatterns = {"/handle-shopping-cart"})
 public class ShoppingCartAjaxController extends HttpServlet {
     private SessionManager sessionManager = SessionManager.getInstance();
     private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
