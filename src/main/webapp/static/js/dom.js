@@ -184,6 +184,9 @@ let dom = {
 
     confirmInfo: function (alertInfo) {
         dom.showAlert(alertInfo["alertMessage"], alertInfo["alertColor"]);
+        setTimeout(function () {
+            window.location.href = "/";
+        }, 5000);
     }
 };
 

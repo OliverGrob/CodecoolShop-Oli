@@ -32,6 +32,6 @@ TODO ------------------------------------------------------
  ~ email sending where we have to
  - login with google account
  - basic testing and logging
- - final touches on checkout page (address handling, email sent screen, changing shopping cart status etc.)
+ + final touches on checkout page (address handling, email sent screen, changing shopping cart status etc.)
  ~ fix the theme picture size problem
  - order history page
