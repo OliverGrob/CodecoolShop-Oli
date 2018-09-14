@@ -96,14 +96,17 @@ public class ShoppingCartDaoJDBC implements ShoppingCartDao {
     }
 
     @Override
-    public List<ShoppingCart> getAll() {
-        return this.objectCreator(controller.executeQueryWithReturnValue(
-        "SELECT shopping_cart.id, users.id AS user_id, users.email_address, users.password, users.first_name, " +
-                  "users.last_name, users.country, users.city, users.address, users.zip_code, users.is_shipping_same, " +
-                  "shopping_cart.time, shopping_cart.status " +
+    public List<Map<String, Object>> getNonActiveShoppingCartsForUser(int userId) {
+        return controller.executeQueryWithReturnValue(
+        "SELECT shopping_cart.id, shopping_cart.time, shopping_cart.status, " +
+                  "SUM(shopping_cart_products.amount) AS amount, " +
+                  "SUM(product.default_price * shopping_cart_products.amount) AS price " +
                 "FROM shopping_cart " +
-                  "JOIN users ON shopping_cart.user_id = users.id;",
-            Collections.emptyList()));
+                  "JOIN shopping_cart_products ON shopping_cart.id = shopping_cart_products.shopping_cart_id " +
+                  "JOIN product ON shopping_cart_products.product_id = product.id " +
+                "WHERE shopping_cart.user_id = ? AND shopping_cart.status NOT LIKE 'IN_CART' " +
+                "GROUP BY shopping_cart.id, shopping_cart.time, shopping_cart.status;",
+            Collections.singletonList(userId));
     }
 
 }

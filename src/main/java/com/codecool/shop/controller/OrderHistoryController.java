@@ -1,10 +1,12 @@
 package com.codecool.shop.controller;
 
 import com.codecool.shop.config.TemplateEngineUtil;
-import com.codecool.shop.dao.*;
-import com.codecool.shop.dao.implementation.*;
-import com.codecool.shop.model.ShoppingCartProduct;
-import com.codecool.shop.model.User;
+import com.codecool.shop.dao.ProductCategoryDao;
+import com.codecool.shop.dao.ShoppingCartDao;
+import com.codecool.shop.dao.SupplierDao;
+import com.codecool.shop.dao.implementation.ProductCategoryDaoJDBC;
+import com.codecool.shop.dao.implementation.ShoppingCartDaoJDBC;
+import com.codecool.shop.dao.implementation.SupplierDaoJDBC;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -14,15 +16,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.List;
 
-@WebServlet(urlPatterns = {"/checkout"})
-public class CheckoutController extends HttpServlet {
+@WebServlet(urlPatterns = {"/order-history"})
+public class OrderHistoryController extends HttpServlet {
     private SessionManager sessionManager = SessionManager.getInstance();
     private ProductCategoryDao productCategoryDataStore = ProductCategoryDaoJDBC.getInstance();
     private SupplierDao supplierDataStore = SupplierDaoJDBC.getInstance();
-    private ShoppingCartProductsDao shoppingCartProductsDataStore = ShoppingCartProductsDaoJDBC.getInstance();
-    private UserDao userHandler = UserDaoJDBC.getInstance();
+    private ShoppingCartDao shoppingCartDataStore = ShoppingCartDaoJDBC.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -36,21 +36,14 @@ public class CheckoutController extends HttpServlet {
             return;
         }
 
-        User user = userHandler.find((Integer) session.getAttribute("userId"));
-        List<ShoppingCartProduct> shoppingCartProducts = shoppingCartProductsDataStore.getShoppingCartProductsByUser(user.getId());
+        int userId = (Integer) session.getAttribute("userId");
 
-        int totalItemNumInCart = shoppingCartProductsDataStore.calculateTotalItemNumber(shoppingCartProducts);
-        float totalPrice = shoppingCartProductsDataStore.calculateTotalPrice(shoppingCartProducts);
-
-        context.setVariable("user", user);
-        context.setVariable("userId", user.getId());
-        context.setVariable("products", shoppingCartProducts);
-        context.setVariable("totalItemNum", totalItemNumInCart);
-        context.setVariable("totalPrice", totalPrice);
+        context.setVariable("userId", userId);
+        context.setVariable("orders", shoppingCartDataStore.getNonActiveShoppingCartsForUser(userId));
         context.setVariable("category", productCategoryDataStore.getAll());
         context.setVariable("supplier", supplierDataStore.getAll());
 
-        engine.process("cart/checkout.html", context, resp.getWriter());
+        engine.process("product/order_history.html", context, resp.getWriter());
     }
 
 }

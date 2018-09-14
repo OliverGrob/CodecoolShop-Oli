@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <div th:replace="layout.html :: layout"></div>
+    <body>
+        <div class="container">
+            <table th:if="${orders.size() != 0}" class="table table-striped m-4 shopping-cart-not-empty border border-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">Cart status last changed</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Amount of products</th>
+                        <th scope="col">Total price of products</th>
+                    </tr>
+                </thead>
+                <tbody th:each="order : ${orders}">
+                    <tr th:id="'table_row_' + ${order.get('id')}">
+                        <td th:text="${order.get('time')}">Time</td>
+                        <td th:text="${order.get('status')}">Status</td>
+                        <td th:text="${order.get('amount')}">Amount</td>
+                        <td th:text="${order.get('price')}">Price</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table th:if="${orders.size() == 0}" class="row shopping-cart-empty">
+                <thead>
+                <tr>
+                    <th class="text-center h1 font-weight-bold">Your order history is empty!</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </body>
+</html>

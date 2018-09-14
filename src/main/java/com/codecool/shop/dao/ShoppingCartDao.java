@@ -4,6 +4,7 @@ import com.codecool.shop.model.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface ShoppingCartDao {
 
@@ -15,6 +16,6 @@ public interface ShoppingCartDao {
 
     void remove(int id);
 
-    List<ShoppingCart> getAll();
+    List<Map<String, Object>> getNonActiveShoppingCartsForUser(int userId);
 
 }
