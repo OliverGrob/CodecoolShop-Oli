@@ -167,8 +167,8 @@ body {
 }
 .checkout-cart-item {
     height: 90px;
-}
-.responsive {
-    max-width: 100%;
-    height: 300px;
+}x
+#wrapper, #wrapper img {
+    width: 100%;
+    height: 400px;
 }

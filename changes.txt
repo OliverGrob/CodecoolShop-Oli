@@ -34,5 +34,5 @@ TODO ------------------------------------------------------
  - basic testing
  + basic logging
  + final touches on checkout page (address handling, email sent screen, changing shopping cart status etc.)
- ~ fix the theme picture size problem
+ + fix the theme picture size problem
  + order history page
